@@ -76,6 +76,7 @@
     <Build Include="Security\JobRunner.sql" />
     <Build Include="JobRunner\Stored Procedures\AddAgentJob.sql" />
     <Build Include="JobRunner\Stored Procedures\RunJobs.sql" />
+    <Build Include="JobRunner\Tables\Config.sql" />
   </ItemGroup>
   <ItemGroup>
     <PostDeploy Include="Scripts\PostDeploy.sql" />
