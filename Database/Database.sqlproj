@@ -73,9 +73,9 @@
   </ItemGroup>
   <ItemGroup>
     <Build Include="dbo\Tables\Person.sql" />
-    <Build Include="JobRunner\Tables\A.sql" />
-    <Build Include="dbo\Stored Procedures\B.sql" />
     <Build Include="Security\JobRunner.sql" />
+    <Build Include="JobRunner\Stored Procedures\AddAgentJob.sql" />
+    <Build Include="JobRunner\Stored Procedures\RunJobs.sql" />
   </ItemGroup>
   <ItemGroup>
     <PostDeploy Include="Scripts\PostDeploy.sql" />

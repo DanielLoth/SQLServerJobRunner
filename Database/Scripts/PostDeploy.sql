@@ -9,3 +9,12 @@ Post-Deployment Script Template
                SELECT * FROM [$(TableName)]					
 --------------------------------------------------------------------------------------
 */
+
+declare @DatabaseName sysname = db_name();
+
+exec JobRunner.AddAgentJob
+    @JobNamePrefix = N'Job Runner - ',
+    @CategoryName = N'Database Maintenance',
+    @ServerName = '(local)',
+    @DatabaseName = @DatabaseName,
+    @OwnerLoginName = N'sa';
