@@ -1,5 +1,5 @@
 ﻿create table JobRunner.Config (
-	RowNumber int not null constraint JobRunner_Config_RowNumber_DF default 1,
+	JobRunnerName sysname not null,
 	MaxJobRunnerExecTimeSeconds int not null,
 	NumRowsPerBatch int not null,
 	DeadlockPriority int not null,
@@ -9,13 +9,20 @@
 	MaxProcedureExecTimeViolationCount int not null,
 	MaxProcedureExecTimeMilliseconds int not null,
 
-	constraint JobRunner_Config_Has_SingleRow_CK check (RowNumber = 1),
+	constraint UC_JobRunner_JobRunnerName
+	primary key clustered (JobRunnerName),
 
 	constraint JobRunner_Config_Has_Valid_DeadlockPriority_CK
-	check (DeadlockPriority between -10 and 10),
+	check (DeadlockPriority >= -10 and DeadlockPriority <= 10),
 
 	constraint JobRunner_Config_Has_Valid_LockTimeoutSeconds_CK
-	check (LockTimeoutSeconds between -1 and 10 or LockTimeoutSeconds in (15, 30, 60, 120))
+	check (
+		LockTimeoutSeconds >= -1 and LockTimeoutSeconds <= 10
+		or LockTimeoutSeconds = 15
+		or LockTimeoutSeconds = 30
+		or LockTimeoutSeconds = 60
+		or LockTimeoutSeconds = 120
+	)
 );
 
 go

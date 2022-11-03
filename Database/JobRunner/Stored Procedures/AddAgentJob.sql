@@ -1,24 +1,34 @@
 ﻿create procedure JobRunner.AddAgentJob
-	@JobNamePrefix nvarchar(50),
+	@JobName sysname,
 	@CategoryName sysname,
 	@ServerName sysname,
 	@DatabaseName sysname,
-	@OwnerLoginName sysname
+	@OwnerLoginName sysname,
+	@Mode varchar(20),
+	@RecurringSecondsInterval int = -1
 as
 
 set nocount, xact_abort on;
 
 declare
 	@JobId uniqueidentifier,
-	@CategoryId int,
-	@JobName sysname,
-	@ReturnCode int;
+	@FrequencyType int,
+	@FrequencyInterval int,
+	@FrequencySubDayType int,
+	@FrequencySubDayInterval int,
+	@ScheduleName sysname = @JobName,
+	@JobStepName sysname = N'Run JobRunner.RunJobs procedure',
+	@JobDescription nvarchar(512) = N'Run background job stored procedures',
+	@JobStopped bit = 0,
+	@ReturnCode int,
+	@i int;
 
 declare	@Command nvarchar(2000) =
 	N'if exists ' +
 	N'(select 1 from sys.procedures where ' +
 	N'object_schema_name(object_id) = N''JobRunner'' ' +
-	N'and object_name(object_id) = N''RunJobs'') exec JobRunner.RunJobs;';
+	N'and object_name(object_id) = N''RunJobs'') ' +
+	N'exec JobRunner.RunJobs @JobRunnerName = ''' + @JobName + N''';';
 
 
 /*
@@ -27,17 +37,15 @@ Validate
 ********************
 */
 
-if len(@DatabaseName) + len(@JobNamePrefix) > 128 throw 50000, N'Job name is too long (more than 128 characters)', 1;
+if @@trancount != 0 throw 50000, N'Running within an open transaction is not allowed', 1;
 if not exists (select 1 from msdb.dbo.syscategories where [name] = @CategoryName) throw 50000, N'Category does not exist', 1;
+if @Mode not in ('CPUIdle', 'Recurring') throw 50000, N'Invalid @Mode. Use ''CPUIdle'' or ''Recurring''', 1;
+if @Mode = 'Recurring' and @RecurringSecondsInterval < 1 throw 50000, N'Invalid @RecurringSecondsInterval - specify a value greater than 0', 1;
 
-set @JobName = @JobNamePrefix + @DatabaseName;
-select @JobId = job_id from msdb.dbo.sysjobs where [name] = @JobName;
-
-if exists (select 1 from msdb.dbo.sysjobsteps where job_id = @JobId and command = @Command)
-begin
-	print N'Job already exists with appropriate job step command';
-	return 0;
-end
+set @FrequencyType = case @Mode when 'CPUIdle' then 128 else 4 end; /* 128 = CPU Idle, 4 = daily */
+set @FrequencyInterval = case @Mode when 'CPUIdle' then 0 else 1 end; /* 0 and 1 = unused */
+set @FrequencySubDayType = case @Mode when 'CPUIdle' then 0 else 2 end; /* 0 = unused, 2 = seconds */
+set @FrequencySubDayInterval = case @Mode when 'CPUIdle' then 0 else @RecurringSecondsInterval end;
 
 
 /*
@@ -48,76 +56,204 @@ Execute
 
 begin try
 
-	set transaction isolation level repeatable read;
+	set transaction isolation level read committed;
 
-	begin transaction;
-
-	select @CategoryId = category_id from msdb.dbo.syscategories where [name] = @CategoryName;
-	if @CategoryId is null throw 50000, N'Job category does not exist.', 1;
-
-	select @JobId = job_id from msdb.dbo.sysjobs where [name] = @JobName;
-
-	if @JobId is not null
+	if exists (select 1 from msdb.dbo.sysjobs where [name] = @JobName)
 	begin
-		exec @ReturnCode = msdb.dbo.sp_delete_job @job_id = @JobId;
-		if @@error != 0 or @ReturnCode != 0 throw 50000, N'Job already exists, but could not be deleted prior to attempted replacement', 1;
+		set @i = 0;
+		while @i < 5000
+		begin
+			begin try
+				set @i += 1;
+
+				set lock_timeout 500;
+				set deadlock_priority high;
+				set transaction isolation level serializable;
+
+				begin transaction;
+
+				if exists (
+					select 1
+					from msdb.dbo.sysjobs
+					where [name] = @JobName and [enabled] = 1
+				)
+				begin
+					exec msdb.dbo.sp_update_job @job_name = @JobName, @enabled = 0;
+					commit;
+				end
+				else
+				begin
+					commit;
+					break;
+				end
+			end try
+			begin catch
+				if @@trancount != 0 rollback;
+
+				/* Swallow exceptions */
+			end catch
+
+			/* 250 millisecond sleep every 10 attempts */
+			if @i % 10 = 0 waitfor delay '00:00:00.250';
+		end
+
+		set @i = 0;
+		while @i < 5000
+		begin
+			begin try
+				set @i += 1;
+
+				set lock_timeout 500;
+				set deadlock_priority high;
+				set transaction isolation level serializable;
+
+				begin transaction;
+				
+				if exists (
+					select 1
+					from msdb.dbo.sysjobactivity
+					where
+						job_id = (select job_id from msdb.dbo.sysjobs where [name] = @JobName) and
+						start_execution_date is not null and
+						stop_execution_date is null
+				)
+				begin
+					exec msdb.dbo.sp_stop_job @job_name = @JobName;
+					set @JobStopped = 1;
+					commit;
+				end
+				else
+				begin
+					commit;
+					break;
+				end
+			end try
+			begin catch
+				if @@trancount != 0 rollback;
+
+				/* Swallow exceptions */
+			end catch
+
+			/* 250 millisecond sleep every 10 attempts */
+			if @i % 10 = 0 waitfor delay '00:00:00.250';
+		end
+
+		if @JobStopped = 0 throw 50000, N'The existing job execution did not stop in time. The job has been left in the disabled state. Re-execute this procedure to try again.', 1;
+
+		set deadlock_priority normal;
+		set lock_timeout -1;
+		set transaction isolation level read committed;
+
+		exec @ReturnCode = msdb.dbo.sp_update_job
+			@job_name = @JobName,
+			@description = @JobDescription,
+			@start_step_id = 1,
+			@category_name = @CategoryName,
+			@owner_login_name = @OwnerLoginName;
+
+		if @@error != 0 or @ReturnCode != 0 throw 50000, N'Could not update existing job', 1;
+
+		exec @ReturnCode = msdb.dbo.sp_update_jobstep
+			@job_name = @JobName,
+			@step_name = @JobStepName,
+			@step_id = 1,
+			@cmdexec_success_code = 0,
+			@on_success_action = 1,
+			@on_success_step_id = 0,
+			@on_fail_action = 2,
+			@on_fail_step_id = 0,
+			@retry_attempts = 0,
+			@retry_interval = 0,
+			@os_run_priority = 0,
+			@subsystem = N'TSQL',
+			@command = @Command,
+			@database_name = @DatabaseName,
+			@flags = 0;
+
+		if @@error != 0 or @ReturnCode != 0 throw 50000, N'Could not update existing jobstep', 1;
+
+		exec @ReturnCode = msdb.dbo.sp_update_schedule
+			@name = @ScheduleName,
+			@enabled = 1,
+			@freq_type = @FrequencyType,
+			@freq_interval = @FrequencyInterval,
+			@freq_subday_type = @FrequencySubDayType,
+			@freq_subday_interval = @FrequencySubDayInterval,
+			@freq_relative_interval = 0,
+			@freq_recurrence_factor = 0,
+			@active_start_date = 20220101,
+			@active_end_date = 99991231,
+			@active_start_time = 0,
+			@active_end_time = 235959;
+
+		if @@error != 0 or @ReturnCode != 0 throw 50000, N'Could not update existing job schedule', 1;
+
+		exec @ReturnCode = msdb.dbo.sp_update_job @job_name = @JobName, @enabled = 1;
+		if @@error != 0 or @ReturnCode != 0 throw 50000, N'Could not re-enable existing job', 1;
 	end
+	else
+	begin
+		exec @ReturnCode = msdb.dbo.sp_add_job
+			@job_name = @JobName,
+			@enabled = 0,
+			@description = @JobDescription,
+			@start_step_id = 1,
+			@category_name = @CategoryName,
+			@owner_login_name = @OwnerLoginName;
 
-	set @JobId = null;
-	exec @ReturnCode = msdb.dbo.sp_add_job
-		@job_name = @JobName,
-		@enabled = 1,
-		@description = N'Run background job stored procedures',
-		@start_step_id = 1,
-		@category_id = @CategoryId,
-		@owner_login_name = @OwnerLoginName,
-		@job_id = @JobId output;
+		if @@error != 0 or @ReturnCode != 0 throw 50000, N'Could not create job', 1;
 
-	if @@error != 0 or @ReturnCode != 0 throw 50000, N'Could not create job', 1;
+		exec @ReturnCode = msdb.dbo.sp_add_jobstep
+			@job_name = @JobName,
+			@step_name = @JobStepName,
+			@step_id = 1,
+			@cmdexec_success_code = 0,
+			@on_success_action = 1,
+			@on_success_step_id = 0,
+			@on_fail_action = 2,
+			@on_fail_step_id = 0,
+			@retry_attempts = 0,
+			@retry_interval = 0,
+			@os_run_priority = 0,
+			@subsystem = N'TSQL',
+			@command = @Command,
+			@database_name = @DatabaseName,
+			@flags = 0;
 
-	exec @ReturnCode = msdb.dbo.sp_add_jobstep
-		@job_id = @JobId,
-		@step_name = N'Run JobRunner.RunJobs procedure (if it exists)',
-		@step_id = 1,
-		@cmdexec_success_code = 0,
-		@on_success_action = 1,
-		@on_success_step_id = 0,
-		@on_fail_action = 2,
-		@on_fail_step_id = 0,
-		@retry_attempts = 0,
-		@retry_interval = 0,
-		@os_run_priority = 0,
-		@subsystem = N'TSQL',
-		@command = @Command,
-		@database_name = @DatabaseName,
-		@flags = 0;
+		if @@error != 0 or @ReturnCode != 0 throw 50000, N'Could not create job step', 1;
 
-	if @@error != 0 or @ReturnCode != 0 throw 50000, N'Could not create job step', 1;
+		exec @ReturnCode = msdb.dbo.sp_add_schedule
+			@schedule_name = @ScheduleName,
+			@enabled = 1,
+			@freq_type = @FrequencyType,
+			@freq_interval = @FrequencyInterval,
+			@freq_subday_type = @FrequencySubDayType,
+			@freq_subday_interval = @FrequencySubDayInterval,
+			@freq_relative_interval = 0,
+			@freq_recurrence_factor = 0,
+			@active_start_date = 20220101,
+			@active_end_date = 99991231,
+			@active_start_time = 0,
+			@active_end_time = 235959,
+			@owner_login_name = @OwnerLoginName;
 
-	exec @ReturnCode = msdb.dbo.sp_add_jobschedule
-		@job_id = @JobId,
-		@name = N'Run periodically (but only if not already running)',
-		@enabled = 1,
-		@freq_type = 4, /* 4 = Daily */
-		@freq_interval = 1, /* 1 = Once (but unused in this case) */
-		@freq_subday_type = 2, /* 2 = seconds */
-		@freq_subday_interval = 20, /* Run every 20 seconds, if not already running */
-		@freq_relative_interval = 0,
-		@freq_recurrence_factor = 0,
-		@active_start_date = 20220101,
-		@active_end_date = 99991231,
-		@active_start_time = 0,
-		@active_end_time = 235959;
+		if @@error != 0 or @ReturnCode != 0 throw 50000, N'Could not create schedule', 1;
 
-	if @@error != 0 or @ReturnCode != 0 throw 50000, N'Could not create job schedule', 1;
+		exec @ReturnCode = msdb.dbo.sp_attach_schedule
+			@job_name = @JobName,
+			@schedule_name = @ScheduleName
 
-	exec @ReturnCode = msdb.dbo.sp_add_jobserver
-		@job_id = @JobId,
-		@server_name = @ServerName;
+		if @@error != 0 or @ReturnCode != 0 throw 50000, N'Could not attach schedule to job', 1;
 
-	if @@error != 0 or @ReturnCode != 0 throw 50000, N'Could not create jobserver', 1;
+		exec @ReturnCode = msdb.dbo.sp_add_jobserver
+			@job_name = @JobName,
+			@server_name = @ServerName;
 
-	commit;
+		if @@error != 0 or @ReturnCode != 0 throw 50000, N'Could not create jobserver', 1;
+
+		exec @ReturnCode = msdb.dbo.sp_update_job @job_name = @JobName, @enabled = 1;
+		if @@error != 0 or @ReturnCode != 0 throw 50000, N'Could not enable job after creating it', 1;
+	end
 
 end try
 begin catch
