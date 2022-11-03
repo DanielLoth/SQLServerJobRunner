@@ -22,64 +22,64 @@ using (
     select
         @JobName as JobRunnerName,
         30000 as TargetJobRunnerExecTimeMilliseconds,
-        1000 as NumRowsPerBatch,
+        1000 as BatchSize,
         -5 as DeadlockPriority,
         3000 as LockTimeoutMilliseconds,
         3000 as MaxCommitLatencyMilliseconds,
         300 as MaxRedoQueueSize,
         5 as MaxProcedureExecTimeViolationCount,
         10000 as MaxProcedureExecTimeMilliseconds,
-        '00:00:00.500' as BatchSleepTime
+        500 as BatchSleepMilliseconds
     union all
     select
         @CpuIdleJobName as JobRunnerName,
         30000 as TargetJobRunnerExecTimeMilliseconds,
-        1000 as NumRowsPerBatch,
+        1000 as BatchSize,
         -5 as DeadlockPriority,
         3000 as LockTimeoutMilliseconds,
         3000 as MaxCommitLatencyMilliseconds,
         300 as MaxRedoQueueSize,
         5 as MaxProcedureExecTimeViolationCount,
         10000 as MaxProcedureExecTimeMilliseconds,
-        '00:00:00.500' as BatchSleepTime
+        1000 as BatchSleepMilliseconds
 ) s
 on t.JobRunnerName = s.JobRunnerName
 when matched then
     update
     set
         t.TargetJobRunnerExecTimeMilliseconds = s.TargetJobRunnerExecTimeMilliseconds,
-        t.NumRowsPerBatch = s.NumRowsPerBatch,
+        t.BatchSize = s.BatchSize,
         t.DeadlockPriority = s.DeadlockPriority,
         t.LockTimeoutMilliseconds = s.LockTimeoutMilliseconds,
         t.MaxCommitLatencyMilliseconds = s.MaxCommitLatencyMilliseconds,
         t.MaxRedoQueueSize = s.MaxRedoQueueSize,
         t.MaxProcedureExecTimeViolationCount = s.MaxProcedureExecTimeViolationCount,
         t.MaxProcedureExecTimeMilliseconds = s.MaxProcedureExecTimeMilliseconds,
-        t.BatchSleepTime = s.BatchSleepTime
+        t.BatchSleepMilliseconds = s.BatchSleepMilliseconds
 when not matched by target then
     insert (
         JobRunnerName,
         TargetJobRunnerExecTimeMilliseconds,
-        NumRowsPerBatch,
+        BatchSize,
         DeadlockPriority,
         LockTimeoutMilliseconds,
         MaxCommitLatencyMilliseconds,
         MaxRedoQueueSize,
         MaxProcedureExecTimeViolationCount,
         MaxProcedureExecTimeMilliseconds,
-        BatchSleepTime
+        BatchSleepMilliseconds
     )
     values (
         JobRunnerName,
         TargetJobRunnerExecTimeMilliseconds,
-        NumRowsPerBatch,
+        BatchSize,
         DeadlockPriority,
         LockTimeoutMilliseconds,
         MaxCommitLatencyMilliseconds,
         MaxRedoQueueSize,
         MaxProcedureExecTimeViolationCount,
         MaxProcedureExecTimeMilliseconds,
-        BatchSleepTime
+        BatchSleepMilliseconds
     )
 when not matched by source then
     delete;

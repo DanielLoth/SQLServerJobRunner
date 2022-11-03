@@ -35,6 +35,7 @@ declare
 	@LastRunnableCheckDtmUtc datetime2(7) = null,
 	@HasConfigRow bit = 0,
 	@IsRunnable bit = 0,
+	@Delay datetime,
 	@Msg nvarchar(2000) = N'';
 
 
@@ -46,14 +47,14 @@ Config variables
 */
 declare
 	@TargetJobRunnerExecTimeMilliseconds bigint,
-	@NumRowsPerBatch int,
+	@BatchSize int,
 	@DeadlockPriority int,
 	@LockTimeoutMilliseconds int,
 	@MaxCommitLatencyMilliseconds bigint,
 	@MaxRedoQueueSize bigint,
 	@MaxProcedureExecTimeViolationCount int,
 	@MaxProcedureExecTimeMilliseconds bigint,
-	@BatchSleepTime char(12);
+	@BatchSleepMilliseconds int;
 
 
 
@@ -67,14 +68,14 @@ begin
 
 		select
 			@HasConfigRow = 1,
-			@NumRowsPerBatch = NumRowsPerBatch,
+			@BatchSize = BatchSize,
 			@DeadlockPriority = DeadlockPriority,
 			@LockTimeoutMilliseconds = LockTimeoutMilliseconds,
 			@MaxCommitLatencyMilliseconds = MaxCommitLatencyMilliseconds,
 			@MaxRedoQueueSize = MaxRedoQueueSize,
 			@MaxProcedureExecTimeViolationCount = MaxProcedureExecTimeViolationCount,
 			@MaxProcedureExecTimeMilliseconds = MaxProcedureExecTimeMilliseconds,
-			@BatchSleepTime = BatchSleepTime
+			@BatchSleepMilliseconds = BatchSleepMilliseconds
 		from JobRunner.Config
 		where JobRunnerName = @JobRunnerName;
 
@@ -106,7 +107,8 @@ begin
 
 	/* TODO: Run */
 
-	waitfor delay @BatchSleepTime;
+	set @Delay = dateadd(millisecond, @BatchSleepMilliseconds, cast(0x0 as datetime));
+	waitfor delay @Delay;
 end
 
 
