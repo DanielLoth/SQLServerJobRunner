@@ -19,7 +19,6 @@ declare
 	@ScheduleName sysname = @JobName,
 	@JobStepName sysname = N'Run JobRunner.RunJobs procedure',
 	@JobDescription nvarchar(512) = N'Run background job stored procedures',
-	@JobStopped bit = 0,
 	@ReturnCode int,
 	@i int;
 
@@ -119,7 +118,6 @@ begin try
 				)
 				begin
 					exec msdb.dbo.sp_stop_job @job_name = @JobName;
-					set @JobStopped = 1;
 					commit;
 				end
 				else
@@ -127,6 +125,7 @@ begin try
 					commit;
 					break;
 				end
+
 			end try
 			begin catch
 				if @@trancount != 0 rollback;
@@ -138,11 +137,21 @@ begin try
 			if @i % 10 = 0 waitfor delay '00:00:00.250';
 		end
 
-		if @JobStopped = 0 throw 50000, N'The existing job execution did not stop in time. The job has been left in the disabled state. Re-execute this procedure to try again.', 1;
-
 		set deadlock_priority normal;
 		set lock_timeout -1;
 		set transaction isolation level read committed;
+
+		if exists (
+			select 1
+			from msdb.dbo.sysjobactivity
+			where
+				job_id = (select job_id from msdb.dbo.sysjobs where [name] = @JobName) and
+				start_execution_date is not null and
+				stop_execution_date is null
+		)
+		begin;
+			throw 50000, N'Could not stop job. The job has been left in the disabled state. Re-execute this procedure to try again.', 1;
+		end
 
 		exec @ReturnCode = msdb.dbo.sp_update_job
 			@job_name = @JobName,
