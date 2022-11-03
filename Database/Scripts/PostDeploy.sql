@@ -28,12 +28,12 @@ using (
         3000 as MaxCommitLatencyMilliseconds,
         300 as MaxRedoQueueSize,
         5 as MaxProcedureExecTimeViolationCount,
-        10000 as MaxProcedureExecTimeMilliseconds,
+        500 as MaxProcedureExecTimeMilliseconds,
         500 as BatchSleepMilliseconds
     union all
     select
         @CpuIdleJobName as JobRunnerName,
-        30000 as TargetJobRunnerExecTimeMilliseconds,
+        3000 as TargetJobRunnerExecTimeMilliseconds,
         1000 as BatchSize,
         -5 as DeadlockPriority,
         3000 as LockTimeoutMilliseconds,
@@ -102,3 +102,51 @@ exec JobRunner.AddAgentJob
     @DatabaseName = @DatabaseName,
     @OwnerLoginName = N'sa',
     @Mode = 'CPUIdle';
+
+exec JobRunner.AddRunnableProcedure
+    @JobRunnerName = @JobName,
+    @SchemaName = 'dbo',
+    @ProcedureName = 'NoOpNoParams',
+    @IsEnabled = 1;
+
+exec JobRunner.AddRunnableProcedure
+    @JobRunnerName = @JobName,
+    @SchemaName = 'dbo',
+    @ProcedureName = 'NoOpBatchSizeParam',
+    @IsEnabled = 1;
+
+exec JobRunner.AddRunnableProcedure
+    @JobRunnerName = @JobName,
+    @SchemaName = 'dbo',
+    @ProcedureName = 'NoOpDoneParam',
+    @IsEnabled = 1;
+
+exec JobRunner.AddRunnableProcedure
+    @JobRunnerName = @JobName,
+    @SchemaName = 'dbo',
+    @ProcedureName = 'NoOpBatchSizeAndDoneParam',
+    @IsEnabled = 1;
+
+exec JobRunner.AddRunnableProcedure
+    @JobRunnerName = @JobName,
+    @SchemaName = 'dbo',
+    @ProcedureName = 'NoOpNoParamsSlow',
+    @IsEnabled = 1;
+
+exec JobRunner.AddRunnableProcedure
+    @JobRunnerName = @JobName,
+    @SchemaName = 'dbo',
+    @ProcedureName = 'NoOpNoParamsReturnCodeNonZero',
+    @IsEnabled = 1;
+
+exec JobRunner.AddRunnableProcedure
+    @JobRunnerName = @JobName,
+    @SchemaName = 'dbo',
+    @ProcedureName = 'NoOpNoParamsThrow',
+    @IsEnabled = 1;
+
+exec JobRunner.AddRunnableProcedure
+    @JobRunnerName = @JobName,
+    @SchemaName = 'dbo',
+    @ProcedureName = 'UpdateGuidValJob',
+    @IsEnabled = 1;

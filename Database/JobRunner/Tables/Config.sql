@@ -8,7 +8,7 @@
 	MaxRedoQueueSize bigint not null,
 	MaxProcedureExecTimeViolationCount int not null,
 	MaxProcedureExecTimeMilliseconds bigint not null,
-	BatchSleepMilliseconds int not null default 500,
+	BatchSleepMilliseconds int not null,
 
 	constraint UC_JobRunner_JobRunnerName
 	primary key clustered (JobRunnerName),

@@ -66,6 +66,7 @@
     <Folder Include="JobRunner\Stored Procedures\" />
     <Folder Include="Security\" />
     <Folder Include="Scripts" />
+    <Folder Include="JobRunner\Sequences" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Localhost.publish.xml" />
@@ -78,7 +79,14 @@
     <Build Include="JobRunner\Stored Procedures\RunJobs.sql" />
     <Build Include="JobRunner\Tables\Config.sql" />
     <Build Include="JobRunner\Stored Procedures\GetRunnableStatus.sql" />
-    <Build Include="JobRunner\Stored Procedures\CreateRunnableProcedure.sql" />
+    <Build Include="JobRunner\Tables\RunnableProcedure.sql" />
+    <Build Include="JobRunner\Stored Procedures\AddRunnableProcedure.sql" />
+    <Build Include="JobRunner\Stored Procedures\GetRunnableProcedure.sql" />
+    <Build Include="dbo\Stored Procedures\NoOpJobs.sql" />
+    <Build Include="JobRunner\Stored Procedures\RunNextJob.sql" />
+    <Build Include="dbo\Tables\GuidVal.sql" />
+    <Build Include="dbo\Stored Procedures\UpdateGuidValJob.sql" />
+    <Build Include="JobRunner\Sequences\ExecutionNumber.sql" />
   </ItemGroup>
   <ItemGroup>
     <PostDeploy Include="Scripts\PostDeploy.sql" />
