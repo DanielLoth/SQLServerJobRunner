@@ -1,5 +1,5 @@
 ﻿create procedure JobRunner.AddAgentJob
-	@JobName sysname,
+	@JobRunnerName sysname,
 	@CategoryName sysname,
 	@ServerName sysname,
 	@DatabaseName sysname,
@@ -16,7 +16,7 @@ declare
 	@FrequencyInterval int,
 	@FrequencySubDayType int,
 	@FrequencySubDayInterval int,
-	@ScheduleName sysname = @JobName,
+	@ScheduleName sysname = @JobRunnerName,
 	@JobStepName sysname = N'Run JobRunner.RunJobs procedure',
 	@JobDescription nvarchar(512) = N'Run background job stored procedures',
 	@ReturnCode int,
@@ -27,7 +27,7 @@ declare	@Command nvarchar(2000) =
 	N'(select 1 from sys.procedures where ' +
 	N'object_schema_name(object_id) = N''JobRunner'' ' +
 	N'and object_name(object_id) = N''RunJobs'') ' +
-	N'exec JobRunner.RunJobs @JobRunnerName = ''' + @JobName + N''';';
+	N'exec JobRunner.RunJobs @JobRunnerName = ''' + @JobRunnerName + N''';';
 
 
 /*
@@ -57,7 +57,7 @@ begin try
 
 	set transaction isolation level read committed;
 
-	if exists (select 1 from msdb.dbo.sysjobs where [name] = @JobName)
+	if exists (select 1 from msdb.dbo.sysjobs where [name] = @JobRunnerName)
 	begin
 		set @i = 0;
 		while @i < 5000
@@ -74,10 +74,10 @@ begin try
 				if exists (
 					select 1
 					from msdb.dbo.sysjobs
-					where [name] = @JobName and [enabled] = 1
+					where [name] = @JobRunnerName and [enabled] = 1
 				)
 				begin
-					exec msdb.dbo.sp_update_job @job_name = @JobName, @enabled = 0;
+					exec msdb.dbo.sp_update_job @job_name = @JobRunnerName, @enabled = 0;
 					commit;
 				end
 				else
@@ -112,12 +112,12 @@ begin try
 					select 1
 					from msdb.dbo.sysjobactivity
 					where
-						job_id = (select job_id from msdb.dbo.sysjobs where [name] = @JobName) and
+						job_id = (select job_id from msdb.dbo.sysjobs where [name] = @JobRunnerName) and
 						start_execution_date is not null and
 						stop_execution_date is null
 				)
 				begin
-					exec msdb.dbo.sp_stop_job @job_name = @JobName;
+					exec msdb.dbo.sp_stop_job @job_name = @JobRunnerName;
 					commit;
 				end
 				else
@@ -145,7 +145,7 @@ begin try
 			select 1
 			from msdb.dbo.sysjobactivity
 			where
-				job_id = (select job_id from msdb.dbo.sysjobs where [name] = @JobName) and
+				job_id = (select job_id from msdb.dbo.sysjobs where [name] = @JobRunnerName) and
 				start_execution_date is not null and
 				stop_execution_date is null
 		)
@@ -154,7 +154,7 @@ begin try
 		end
 
 		exec @ReturnCode = msdb.dbo.sp_update_job
-			@job_name = @JobName,
+			@job_name = @JobRunnerName,
 			@description = @JobDescription,
 			@start_step_id = 1,
 			@category_name = @CategoryName,
@@ -163,7 +163,7 @@ begin try
 		if @@error != 0 or @ReturnCode != 0 throw 50000, N'Could not update existing job', 1;
 
 		exec @ReturnCode = msdb.dbo.sp_update_jobstep
-			@job_name = @JobName,
+			@job_name = @JobRunnerName,
 			@step_name = @JobStepName,
 			@step_id = 1,
 			@cmdexec_success_code = 0,
@@ -197,13 +197,13 @@ begin try
 
 		if @@error != 0 or @ReturnCode != 0 throw 50000, N'Could not update existing job schedule', 1;
 
-		exec @ReturnCode = msdb.dbo.sp_update_job @job_name = @JobName, @enabled = 1;
+		exec @ReturnCode = msdb.dbo.sp_update_job @job_name = @JobRunnerName, @enabled = 1;
 		if @@error != 0 or @ReturnCode != 0 throw 50000, N'Could not re-enable existing job', 1;
 	end
 	else
 	begin
 		exec @ReturnCode = msdb.dbo.sp_add_job
-			@job_name = @JobName,
+			@job_name = @JobRunnerName,
 			@enabled = 0,
 			@description = @JobDescription,
 			@start_step_id = 1,
@@ -213,7 +213,7 @@ begin try
 		if @@error != 0 or @ReturnCode != 0 throw 50000, N'Could not create job', 1;
 
 		exec @ReturnCode = msdb.dbo.sp_add_jobstep
-			@job_name = @JobName,
+			@job_name = @JobRunnerName,
 			@step_name = @JobStepName,
 			@step_id = 1,
 			@cmdexec_success_code = 0,
@@ -249,18 +249,18 @@ begin try
 		if @@error != 0 or @ReturnCode != 0 throw 50000, N'Could not create schedule', 1;
 
 		exec @ReturnCode = msdb.dbo.sp_attach_schedule
-			@job_name = @JobName,
+			@job_name = @JobRunnerName,
 			@schedule_name = @ScheduleName
 
 		if @@error != 0 or @ReturnCode != 0 throw 50000, N'Could not attach schedule to job', 1;
 
 		exec @ReturnCode = msdb.dbo.sp_add_jobserver
-			@job_name = @JobName,
+			@job_name = @JobRunnerName,
 			@server_name = @ServerName;
 
 		if @@error != 0 or @ReturnCode != 0 throw 50000, N'Could not create jobserver', 1;
 
-		exec @ReturnCode = msdb.dbo.sp_update_job @job_name = @JobName, @enabled = 1;
+		exec @ReturnCode = msdb.dbo.sp_update_job @job_name = @JobRunnerName, @enabled = 1;
 		if @@error != 0 or @ReturnCode != 0 throw 50000, N'Could not enable job after creating it', 1;
 	end
 

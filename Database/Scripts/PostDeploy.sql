@@ -11,7 +11,7 @@ Post-Deployment Script Template
 */
 
 declare @DatabaseName sysname = db_name();
-declare @JobName sysname = N'Job Runner - ' + @DatabaseName;
+declare @JobRunnerName sysname = N'Job Runner - ' + @DatabaseName;
 declare @CpuIdleJobName sysname = N'Job Runner (Idle CPU) - ' + @DatabaseName;
 
 /* Use a valid category name here */
@@ -20,7 +20,7 @@ declare @CategoryName sysname = N'Database Maintenance';
 merge JobRunner.Config with (serializable, updlock) t
 using (
     select
-        @JobName as JobRunnerName,
+        @JobRunnerName as JobRunnerName,
         30000 as TargetJobRunnerExecTimeMilliseconds,
         1000 as BatchSize,
         -5 as DeadlockPriority,
@@ -87,7 +87,7 @@ when not matched by source then
 
 
 exec JobRunner.AddAgentJob
-    @JobName = @JobName,
+    @JobRunnerName = @JobRunnerName,
     @CategoryName = @CategoryName,
     @ServerName = '(local)',
     @DatabaseName = @DatabaseName,
@@ -96,7 +96,7 @@ exec JobRunner.AddAgentJob
     @RecurringSecondsInterval = 10;
 
 exec JobRunner.AddAgentJob
-    @JobName = @CpuIdleJobName,
+    @JobRunnerName = @CpuIdleJobName,
     @CategoryName = @CategoryName,
     @ServerName = '(local)',
     @DatabaseName = @DatabaseName,
@@ -104,49 +104,49 @@ exec JobRunner.AddAgentJob
     @Mode = 'CPUIdle';
 
 exec JobRunner.AddRunnableProcedure
-    @JobRunnerName = @JobName,
+    @JobRunnerName = @JobRunnerName,
     @SchemaName = 'dbo',
     @ProcedureName = 'NoOpNoParams',
     @IsEnabled = 1;
 
 exec JobRunner.AddRunnableProcedure
-    @JobRunnerName = @JobName,
+    @JobRunnerName = @JobRunnerName,
     @SchemaName = 'dbo',
     @ProcedureName = 'NoOpBatchSizeParam',
     @IsEnabled = 1;
 
 exec JobRunner.AddRunnableProcedure
-    @JobRunnerName = @JobName,
+    @JobRunnerName = @JobRunnerName,
     @SchemaName = 'dbo',
     @ProcedureName = 'NoOpDoneParam',
     @IsEnabled = 1;
 
 exec JobRunner.AddRunnableProcedure
-    @JobRunnerName = @JobName,
+    @JobRunnerName = @JobRunnerName,
     @SchemaName = 'dbo',
     @ProcedureName = 'NoOpBatchSizeAndDoneParam',
     @IsEnabled = 1;
 
 exec JobRunner.AddRunnableProcedure
-    @JobRunnerName = @JobName,
+    @JobRunnerName = @JobRunnerName,
     @SchemaName = 'dbo',
     @ProcedureName = 'NoOpNoParamsSlow',
     @IsEnabled = 1;
 
 exec JobRunner.AddRunnableProcedure
-    @JobRunnerName = @JobName,
+    @JobRunnerName = @JobRunnerName,
     @SchemaName = 'dbo',
     @ProcedureName = 'NoOpNoParamsReturnCodeNonZero',
     @IsEnabled = 1;
 
 exec JobRunner.AddRunnableProcedure
-    @JobRunnerName = @JobName,
+    @JobRunnerName = @JobRunnerName,
     @SchemaName = 'dbo',
     @ProcedureName = 'NoOpNoParamsThrow',
     @IsEnabled = 1;
 
 exec JobRunner.AddRunnableProcedure
-    @JobRunnerName = @JobName,
+    @JobRunnerName = @JobRunnerName,
     @SchemaName = 'dbo',
     @ProcedureName = 'UpdateGuidValJob',
     @IsEnabled = 1;
