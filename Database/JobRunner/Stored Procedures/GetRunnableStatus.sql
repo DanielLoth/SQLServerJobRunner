@@ -14,7 +14,8 @@ set @IsRunnable = 0;
 
 declare
 	@IsPrimary bit = 0,
-	@IsClusterUnhealthy bit = 0;
+	@IsClusterUnhealthy bit = 0,
+	@IsNodeSuspended bit = 0;
 
 begin try
 	select
@@ -22,6 +23,7 @@ begin try
 		s.is_primary_replica,
 		s.is_commit_participant,
 		s.synchronization_health_desc,
+		s.is_suspended,
 		s.redo_queue_size,
 		s.log_send_queue_size,
 		s.last_commit_time
@@ -31,18 +33,14 @@ begin try
 	option (recompile);
 
 	
-	select @IsPrimary = is_primary_replica
-	from #Snapshot
-	where is_local = 1;
-
-	/* Not primary, no further checks necessary */
+	select @IsPrimary = is_primary_replica from #Snapshot where is_local = 1;
 	if @IsPrimary = 0 return 0;
 
-	select @IsClusterUnhealthy = 1
-	from #Snapshot
-	where synchronization_health_desc != N'HEALTHY';
-
+	select @IsClusterUnhealthy = 1 from #Snapshot where synchronization_health_desc != N'HEALTHY';
 	if @IsClusterUnhealthy = 1 return 0;
+
+	select @IsNodeSuspended = 1 from #Snapshot where is_suspended = 1;
+	if @IsNodeSuspended = 1 return 0;
 
 	declare
 		@CurrentRedoQueueSize bigint,
