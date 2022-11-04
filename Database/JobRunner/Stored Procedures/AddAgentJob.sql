@@ -9,6 +9,7 @@
 as
 
 set nocount, xact_abort on;
+set transaction isolation level read committed;
 
 declare
 	@JobId uniqueidentifier,
@@ -55,46 +56,9 @@ Execute
 
 begin try
 
-	set transaction isolation level read committed;
-
 	if exists (select 1 from msdb.dbo.sysjobs where [name] = @JobRunnerName)
 	begin
-		set @i = 0;
-		while @i < 5000
-		begin
-			begin try
-				set @i += 1;
-
-				set lock_timeout 500;
-				set deadlock_priority high;
-				set transaction isolation level serializable;
-
-				begin transaction;
-
-				if exists (
-					select 1
-					from msdb.dbo.sysjobs
-					where [name] = @JobRunnerName and [enabled] = 1
-				)
-				begin
-					exec msdb.dbo.sp_update_job @job_name = @JobRunnerName, @enabled = 0;
-					commit;
-				end
-				else
-				begin
-					commit;
-					break;
-				end
-			end try
-			begin catch
-				if @@trancount != 0 rollback;
-
-				/* Swallow exceptions */
-			end catch
-
-			/* 250 millisecond sleep every 10 attempts */
-			if @i % 10 = 0 waitfor delay '00:00:00.250';
-		end
+		exec JobRunner.DisableAgentJob @JobRunnerName = @JobRunnerName;
 
 		set @i = 0;
 		while @i < 5000
