@@ -1,4 +1,4 @@
-﻿create procedure JobRunner.StopAgentJob
+﻿create procedure JobRunner.StopAgentJob_internal
 	@JobRunnerName sysname
 as
 

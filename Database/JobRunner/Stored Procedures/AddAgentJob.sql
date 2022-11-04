@@ -56,8 +56,8 @@ Execute
 
 begin try
 
-	exec JobRunner.DisableAgentJob @JobRunnerName = @JobRunnerName;
-	exec JobRunner.StopAgentJob @JobRunnerName = @JobRunnerName;
+	exec JobRunner.DisableAgentJob_internal @JobRunnerName = @JobRunnerName;
+	exec JobRunner.StopAgentJob_internal @JobRunnerName = @JobRunnerName;
 
 	if exists (select 1 from msdb.dbo.sysjobs where [name] = @JobRunnerName)
 	begin

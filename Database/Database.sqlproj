@@ -87,8 +87,8 @@
     <Build Include="dbo\Tables\GuidVal.sql" />
     <Build Include="dbo\Stored Procedures\UpdateGuidValJob.sql" />
     <Build Include="JobRunner\Sequences\ExecutionNumber.sql" />
-    <Build Include="JobRunner\Stored Procedures\DisableAgentJob.sql" />
-    <Build Include="JobRunner\Stored Procedures\StopAgentJob.sql" />
+    <Build Include="JobRunner\Stored Procedures\DisableAgentJob_internal.sql" />
+    <Build Include="JobRunner\Stored Procedures\StopAgentJob_internal.sql" />
   </ItemGroup>
   <ItemGroup>
     <PostDeploy Include="Scripts\PostDeploy.sql" />
