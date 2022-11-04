@@ -42,7 +42,8 @@ declare
 	@BatchSize int,
 	@DeadlockPriority int,
 	@LockTimeoutMilliseconds int,
-	@MaxCommitLatencyMilliseconds bigint,
+	@MaxSyncSecondaryCommitLatencyMilliseconds bigint,
+	@MaxAsyncSecondaryCommitLatencyMilliseconds bigint,
 	@MaxRedoQueueSize bigint,
 	@MaxProcedureExecTimeViolationCount int,
 	@MaxProcedureExecTimeMilliseconds bigint,
@@ -69,7 +70,8 @@ begin
 			@BatchSize = BatchSize,
 			@DeadlockPriority = DeadlockPriority,
 			@LockTimeoutMilliseconds = LockTimeoutMilliseconds,
-			@MaxCommitLatencyMilliseconds = MaxCommitLatencyMilliseconds,
+			@MaxSyncSecondaryCommitLatencyMilliseconds = MaxSyncSecondaryCommitLatencyMilliseconds,
+			@MaxAsyncSecondaryCommitLatencyMilliseconds = MaxAsyncSecondaryCommitLatencyMilliseconds,
 			@MaxRedoQueueSize = MaxRedoQueueSize,
 			@MaxProcedureExecTimeViolationCount = MaxProcedureExecTimeViolationCount,
 			@MaxProcedureExecTimeMilliseconds = MaxProcedureExecTimeMilliseconds,
@@ -97,7 +99,8 @@ begin
 		exec JobRunner.GetRunnableStatus
 			@JobRunnerName = @JobRunnerName,
 			@MaxRedoQueueSize = @MaxRedoQueueSize,
-			@MaxCommitLatencyMilliseconds = @MaxCommitLatencyMilliseconds,
+			@MaxSyncSecondaryCommitLatencyMilliseconds = @MaxSyncSecondaryCommitLatencyMilliseconds,
+			@MaxAsyncSecondaryCommitLatencyMilliseconds = @MaxAsyncSecondaryCommitLatencyMilliseconds,
 			@IsRunnable = @IsRunnable output;
 
 		if @IsRunnable = 0 throw 50000, N'Not runnable', 1;

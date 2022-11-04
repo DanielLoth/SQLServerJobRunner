@@ -1,7 +1,8 @@
 ﻿create procedure JobRunner.GetRunnableStatus
 	@JobRunnerName sysname,
 	@MaxRedoQueueSize bigint,
-	@MaxCommitLatencyMilliseconds bigint,
+	@MaxSyncSecondaryCommitLatencyMilliseconds bigint,
+	@MaxAsyncSecondaryCommitLatencyMilliseconds bigint,
 	@IsRunnable bit output
 as
 
@@ -13,7 +14,7 @@ if @@trancount != 0 throw 50000, N'Running within an open transaction is not all
 set @IsRunnable = 0;
 
 declare
-	@IsPrimary bit = 0,
+	@IsPrimary bit = null,
 	@IsAnyNodeUnhealthy bit = 0,
 	@IsAnyNodeSuspended bit = 0,
 	@IsPrimaryOnline bit = 0,
@@ -41,6 +42,13 @@ begin try
 
 	
 	select @IsPrimary = is_primary_replica from #Snapshot where is_local = 1;
+
+	if @IsPrimary is null
+	begin
+		set @IsRunnable = 1;
+		return;
+	end
+
 	if @IsPrimary = 0 return 0;
 
 	select @IsPrimaryOnline = 1 from #Snapshot where is_local = 1 and database_state_desc = N'ONLINE';
@@ -62,7 +70,7 @@ begin try
 	where is_primary_replica = 0 and is_commit_participant = 1;
 
 	set @TimeDiff = abs(datediff(millisecond, @PrimaryLastCommitTime, @MaxSyncSecondaryLastCommitTime));
-	if @TimeDiff > @MaxCommitLatencyMilliseconds
+	if @TimeDiff > @MaxSyncSecondaryCommitLatencyMilliseconds
 	begin
 		return 0;
 	end
@@ -72,7 +80,7 @@ begin try
 	where is_primary_replica = 0 and is_commit_participant = 0;
 
 	set @TimeDiff = abs(datediff(millisecond, @PrimaryLastCommitTime, @MaxAsyncSecondaryLastCommitTime));
-	if @TimeDiff > @MaxCommitLatencyMilliseconds
+	if @TimeDiff > @MaxAsyncSecondaryCommitLatencyMilliseconds
 	begin
 		return 0;
 	end
