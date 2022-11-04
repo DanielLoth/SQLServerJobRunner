@@ -23,7 +23,8 @@ declare
 	@MaxAsyncSecondaryLastCommitTime datetime,
 	@MaxSyncSecondaryLastCommitTime datetime,
 	@TimeDiff bigint,
-	@CurrentRedoQueueSize bigint;
+	@CurrentMaxSyncSecondaryRedoQueueSize bigint,
+	@CurrentMaxAsyncSecondaryRedoQueueSize bigint;
 
 begin try
 	select
@@ -61,9 +62,6 @@ begin try
 	select @IsAnyNodeSuspended = 1 from #Snapshot where is_suspended = 1;
 	if @IsAnyNodeSuspended = 1 return 0;
 
-	select @CurrentRedoQueueSize = max(isnull(redo_queue_size, 0)) from #Snapshot;
-	if @CurrentRedoQueueSize > @MaxSyncSecondaryRedoQueueSize return 0;
-
 	select @PrimaryLastCommitTime = last_commit_time from #Snapshot where is_primary_replica = 1;
 
 	select @MaxSyncSecondaryLastCommitTime = isnull(max(last_commit_time), @PrimaryLastCommitTime)
@@ -85,6 +83,18 @@ begin try
 	begin
 		return 0;
 	end
+
+	select @CurrentMaxSyncSecondaryRedoQueueSize = isnull(max(redo_queue_size), 0)
+	from #Snapshot
+	where is_primary_replica = 0 and is_commit_participant = 1;
+
+	if @CurrentMaxSyncSecondaryRedoQueueSize > @MaxSyncSecondaryRedoQueueSize return 0;
+
+	select @CurrentMaxAsyncSecondaryRedoQueueSize = isnull(max(redo_queue_size), 0)
+	from #Snapshot
+	where is_primary_replica = 0 and is_commit_participant = 0;
+
+	if @CurrentMaxAsyncSecondaryRedoQueueSize > @MaxAsyncSecondaryRedoQueueSize return 0;
 
 	/* Reaching this point means all checks pass, and we're runnable */
 	set @IsRunnable = 1;
