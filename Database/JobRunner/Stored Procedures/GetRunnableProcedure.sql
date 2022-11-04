@@ -15,20 +15,20 @@ as
 
 declare @Result int = 0;
 
-exec @Result = [%%SchemaName%%].[%%ProcedureName%%] %%ParamList%%;
+exec @Result = [%%SchemaName%%].[%%ProcedureName%%]%%ParamList%%
 
 return @Result;
 ';
 
 declare @ParamListSql nvarchar(200) = N'';
-set @ParamListSql += case when @HasBatchSizeParam = 1 then '@BatchSize = @BatchSize' else '' end;
-set @ParamListSql += case when @HasBatchSizeParam = 1 and @HasDoneParam = 1 then ', ' else '' end;
-set @ParamListSql += case when @HasDoneParam = 1 then '@Done = @Done' else '' end;
+set @ParamListSql += case when @HasBatchSizeParam = 1 then N' @BatchSize = @BatchSize' else N'' end;
+set @ParamListSql += case when @HasBatchSizeParam = 1 and @HasDoneParam = 1 then N',' else N'' end;
+set @ParamListSql += case when @HasDoneParam = 1 then N' @Done = @Done' else N'' end;
+set @ParamListSql += N';';
 
---set @Sql = replace(@Sql, '%%JobRunnerName%%', @JobRunnerName);
-set @Sql = replace(@Sql, '%%SchemaName%%', @SchemaName);
-set @Sql = replace(@Sql, '%%ProcedureName%%', @ProcedureName);
-set @Sql = replace(@Sql, '%%ParamList%%', @ParamListSql);
+set @Sql = replace(@Sql, N'%%SchemaName%%', @SchemaName);
+set @Sql = replace(@Sql, N'%%ProcedureName%%', @ProcedureName);
+set @Sql = replace(@Sql, N'%%ParamList%%', @ParamListSql);
 
 set @GeneratedProcedureSql = @Sql;
 
