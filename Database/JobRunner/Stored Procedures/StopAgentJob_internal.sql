@@ -87,6 +87,21 @@ begin try
 			waitfor delay @Delay;
 		end
 	end
+
+	/* Final check. */
+	set lock_timeout -1;
+	if exists (
+		select 1
+		from msdb.dbo.sysjobactivity
+		where
+			job_id = @JobId and
+			start_execution_date is not null and
+			stop_execution_date is null
+	)
+	begin;
+		throw 50000, N'Could not stop job. The job has been left in the disabled state. Re-execute this procedure to try again.', 1;
+	end
+
 end try
 begin catch
 	if @@trancount != 0 rollback;

@@ -20,8 +20,7 @@ declare
 	@ScheduleName sysname = @JobRunnerName,
 	@JobStepName sysname = N'Run JobRunner.RunJobs procedure',
 	@JobDescription nvarchar(512) = N'Run background job stored procedures',
-	@ReturnCode int,
-	@i int;
+	@ReturnCode int;
 
 declare	@Command nvarchar(2000) =
 	N'if exists ' +
@@ -61,18 +60,6 @@ begin try
 
 	if exists (select 1 from msdb.dbo.sysjobs where [name] = @JobRunnerName)
 	begin
-		if exists (
-			select 1
-			from msdb.dbo.sysjobactivity
-			where
-				job_id = (select job_id from msdb.dbo.sysjobs where [name] = @JobRunnerName) and
-				start_execution_date is not null and
-				stop_execution_date is null
-		)
-		begin;
-			throw 50000, N'Could not stop job. The job has been left in the disabled state. Re-execute this procedure to try again.', 1;
-		end
-
 		exec @ReturnCode = msdb.dbo.sp_update_job
 			@job_name = @JobRunnerName,
 			@description = @JobDescription,
