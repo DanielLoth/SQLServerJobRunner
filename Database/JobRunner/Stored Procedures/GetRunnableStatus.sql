@@ -14,47 +14,68 @@ set @IsRunnable = 0;
 
 declare
 	@IsPrimary bit = 0,
-	@IsClusterUnhealthy bit = 0,
-	@IsNodeSuspended bit = 0;
+	@IsAnyNodeUnhealthy bit = 0,
+	@IsAnyNodeSuspended bit = 0,
+	@IsPrimaryOnline bit = 0,
+	@PrimaryLastCommitTime datetime,
+	@MaxAsyncSecondaryLastCommitTime datetime,
+	@MaxSyncSecondaryLastCommitTime datetime,
+	@TimeDiff bigint,
+	@CurrentRedoQueueSize bigint;
 
 begin try
 	select
-		s.is_local,
-		s.is_primary_replica,
-		s.is_commit_participant,
-		s.synchronization_health_desc,
-		s.is_suspended,
-		s.redo_queue_size,
-		s.log_send_queue_size,
-		s.last_commit_time
+		is_local,
+		is_primary_replica,
+		is_commit_participant,
+		synchronization_health_desc,
+		database_state_desc,
+		is_suspended,
+		redo_queue_size,
+		log_send_queue_size,
+		last_commit_time
 	into #Snapshot
-	from sys.dm_hadr_database_replica_states s
-	where s.database_id = db_id(db_name())
+	from sys.dm_hadr_database_replica_states
+	where database_id = db_id(db_name())
 	option (recompile);
 
 	
 	select @IsPrimary = is_primary_replica from #Snapshot where is_local = 1;
 	if @IsPrimary = 0 return 0;
 
-	select @IsClusterUnhealthy = 1 from #Snapshot where synchronization_health_desc != N'HEALTHY';
-	if @IsClusterUnhealthy = 1 return 0;
+	select @IsPrimaryOnline = 1 from #Snapshot where is_local = 1 and database_state_desc = N'ONLINE';
+	if @IsPrimaryOnline = 0 return 0;
 
-	select @IsNodeSuspended = 1 from #Snapshot where is_suspended = 1;
-	if @IsNodeSuspended = 1 return 0;
+	select @IsAnyNodeUnhealthy = 1 from #Snapshot where synchronization_health_desc != N'HEALTHY';
+	if @IsAnyNodeUnhealthy = 1 return 0;
 
-	declare
-		@CurrentRedoQueueSize bigint,
-		@CurrentPrimaryCommitTime datetime,
-		@CurrentLatestSecondaryCommitTime datetime,
-		@CurrentCommitLatency bigint;
+	select @IsAnyNodeSuspended = 1 from #Snapshot where is_suspended = 1;
+	if @IsAnyNodeSuspended = 1 return 0;
 
 	select @CurrentRedoQueueSize = max(isnull(redo_queue_size, 0)) from #Snapshot;
 	if @CurrentRedoQueueSize > @MaxRedoQueueSize return 0;
 
-	select @CurrentPrimaryCommitTime = last_commit_time from #Snapshot where is_primary_replica = 1;
-	select @CurrentLatestSecondaryCommitTime = max(last_commit_time) from #Snapshot where is_primary_replica = 0;
-	select @CurrentCommitLatency = datediff(millisecond, @CurrentPrimaryCommitTime, @CurrentLatestSecondaryCommitTime);
-	if @CurrentCommitLatency > @MaxCommitLatencyMilliseconds return 0;
+	select @PrimaryLastCommitTime = last_commit_time from #Snapshot where is_primary_replica = 1;
+
+	select @MaxSyncSecondaryLastCommitTime = isnull(max(last_commit_time), @PrimaryLastCommitTime)
+	from #Snapshot
+	where is_primary_replica = 0 and is_commit_participant = 1;
+
+	set @TimeDiff = abs(datediff(millisecond, @PrimaryLastCommitTime, @MaxSyncSecondaryLastCommitTime));
+	if @TimeDiff > @MaxCommitLatencyMilliseconds
+	begin
+		return 0;
+	end
+
+	select @MaxAsyncSecondaryLastCommitTime = isnull(max(last_commit_time), @PrimaryLastCommitTime)
+	from #Snapshot
+	where is_primary_replica = 0 and is_commit_participant = 0;
+
+	set @TimeDiff = abs(datediff(millisecond, @PrimaryLastCommitTime, @MaxAsyncSecondaryLastCommitTime));
+	if @TimeDiff > @MaxCommitLatencyMilliseconds
+	begin
+		return 0;
+	end
 
 	/* Reaching this point means all checks pass, and we're runnable */
 	set @IsRunnable = 1;
