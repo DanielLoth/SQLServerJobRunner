@@ -70,7 +70,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Localhost.publish.xml" />
-    <None Include="Scripts\Create job.sql" />
   </ItemGroup>
   <ItemGroup>
     <Build Include="dbo\Tables\Person.sql" />
