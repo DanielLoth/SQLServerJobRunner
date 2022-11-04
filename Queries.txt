@@ -3,11 +3,14 @@ declare @GroupDatabaseId uniqueidentifier;
 
 select @GroupId = group_id, @GroupDatabaseId = group_database_id from sys.availability_databases_cluster where database_name = db_name();
 select * from sys.availability_databases_cluster where database_name = db_name();
-select * from sys.availability_replicas where group_id = @GroupId;
-select * from sys.dm_hadr_database_replica_states where database_id = db_id(db_name()) /* group_id = @GroupId and group_database_id = @GroupDatabaseId */ option (recompile);
+--select * from sys.availability_replicas where group_id = @GroupId;
 
---select * from sys.dm_exec_describe_first_result_set('select * from sys.dm_hadr_database_replica_states;', null, null);
-
---exec sp_helptext 'sys.fn_hadr_is_primary_replica';
-
-
+select
+	is_local, is_primary_replica, synchronization_state, synchronization_state_desc, is_commit_participant,
+	synchronization_health, synchronization_health_desc, database_state, database_state_desc,
+	is_suspended, suspend_reason, suspend_reason_desc,
+	last_sent_time, last_received_time, last_hardened_time, last_redone_time,
+	log_send_queue_size, log_send_rate, redo_queue_size, redo_rate, last_commit_time, secondary_lag_seconds
+from sys.dm_hadr_database_replica_states
+where database_id = db_id(db_name())
+option (recompile);
