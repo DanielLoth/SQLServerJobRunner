@@ -28,6 +28,7 @@ using (
         1000 as MaxSyncSecondaryCommitLatencyMilliseconds,
         5000 as MaxAsyncSecondaryCommitLatencyMilliseconds,
         300 as MaxSyncSecondaryRedoQueueSize,
+        5000 as MaxAsyncSecondaryRedoQueueSize,
         5 as MaxProcedureExecTimeViolationCount,
         500 as MaxProcedureExecTimeMilliseconds,
         500 as BatchSleepMilliseconds
@@ -41,6 +42,7 @@ using (
         1000 as MaxSyncSecondaryCommitLatencyMilliseconds,
         5000 as MaxAsyncSecondaryCommitLatencyMilliseconds,
         300 as MaxSyncSecondaryRedoQueueSize,
+        5000 as MaxAsyncSecondaryRedoQueueSize,
         5 as MaxProcedureExecTimeViolationCount,
         10000 as MaxProcedureExecTimeMilliseconds,
         1000 as BatchSleepMilliseconds
@@ -56,6 +58,7 @@ when matched then
         t.MaxSyncSecondaryCommitLatencyMilliseconds = s.MaxSyncSecondaryCommitLatencyMilliseconds,
         t.MaxAsyncSecondaryCommitLatencyMilliseconds = s.MaxAsyncSecondaryCommitLatencyMilliseconds,
         t.MaxSyncSecondaryRedoQueueSize = s.MaxSyncSecondaryRedoQueueSize,
+        t.MaxAsyncSecondaryRedoQueueSize = s.MaxAsyncSecondaryRedoQueueSize,
         t.MaxProcedureExecTimeViolationCount = s.MaxProcedureExecTimeViolationCount,
         t.MaxProcedureExecTimeMilliseconds = s.MaxProcedureExecTimeMilliseconds,
         t.BatchSleepMilliseconds = s.BatchSleepMilliseconds
@@ -69,6 +72,7 @@ when not matched by target then
         MaxSyncSecondaryCommitLatencyMilliseconds,
         MaxAsyncSecondaryCommitLatencyMilliseconds,
         MaxSyncSecondaryRedoQueueSize,
+        MaxAsyncSecondaryRedoQueueSize,
         MaxProcedureExecTimeViolationCount,
         MaxProcedureExecTimeMilliseconds,
         BatchSleepMilliseconds
@@ -82,6 +86,7 @@ when not matched by target then
         MaxSyncSecondaryCommitLatencyMilliseconds,
         MaxAsyncSecondaryCommitLatencyMilliseconds,
         MaxSyncSecondaryRedoQueueSize,
+        MaxAsyncSecondaryRedoQueueSize,
         MaxProcedureExecTimeViolationCount,
         MaxProcedureExecTimeMilliseconds,
         BatchSleepMilliseconds

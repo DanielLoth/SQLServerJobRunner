@@ -1,6 +1,7 @@
 ﻿create procedure JobRunner.GetRunnableStatus
 	@JobRunnerName sysname,
 	@MaxSyncSecondaryRedoQueueSize bigint,
+	@MaxAsyncSecondaryRedoQueueSize bigint,
 	@MaxSyncSecondaryCommitLatencyMilliseconds bigint,
 	@MaxAsyncSecondaryCommitLatencyMilliseconds bigint,
 	@IsRunnable bit output
