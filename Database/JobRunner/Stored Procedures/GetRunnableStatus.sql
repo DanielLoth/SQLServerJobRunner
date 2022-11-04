@@ -1,6 +1,6 @@
 ﻿create procedure JobRunner.GetRunnableStatus
 	@JobRunnerName sysname,
-	@MaxRedoQueueSize bigint,
+	@MaxSyncSecondaryRedoQueueSize bigint,
 	@MaxSyncSecondaryCommitLatencyMilliseconds bigint,
 	@MaxAsyncSecondaryCommitLatencyMilliseconds bigint,
 	@IsRunnable bit output
@@ -61,7 +61,7 @@ begin try
 	if @IsAnyNodeSuspended = 1 return 0;
 
 	select @CurrentRedoQueueSize = max(isnull(redo_queue_size, 0)) from #Snapshot;
-	if @CurrentRedoQueueSize > @MaxRedoQueueSize return 0;
+	if @CurrentRedoQueueSize > @MaxSyncSecondaryRedoQueueSize return 0;
 
 	select @PrimaryLastCommitTime = last_commit_time from #Snapshot where is_primary_replica = 1;
 

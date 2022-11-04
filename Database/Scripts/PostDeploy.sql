@@ -27,7 +27,7 @@ using (
         3000 as LockTimeoutMilliseconds,
         1000 as MaxSyncSecondaryCommitLatencyMilliseconds,
         5000 as MaxAsyncSecondaryCommitLatencyMilliseconds,
-        300 as MaxRedoQueueSize,
+        300 as MaxSyncSecondaryRedoQueueSize,
         5 as MaxProcedureExecTimeViolationCount,
         500 as MaxProcedureExecTimeMilliseconds,
         500 as BatchSleepMilliseconds
@@ -40,7 +40,7 @@ using (
         3000 as LockTimeoutMilliseconds,
         1000 as MaxSyncSecondaryCommitLatencyMilliseconds,
         5000 as MaxAsyncSecondaryCommitLatencyMilliseconds,
-        300 as MaxRedoQueueSize,
+        300 as MaxSyncSecondaryRedoQueueSize,
         5 as MaxProcedureExecTimeViolationCount,
         10000 as MaxProcedureExecTimeMilliseconds,
         1000 as BatchSleepMilliseconds
@@ -55,7 +55,7 @@ when matched then
         t.LockTimeoutMilliseconds = s.LockTimeoutMilliseconds,
         t.MaxSyncSecondaryCommitLatencyMilliseconds = s.MaxSyncSecondaryCommitLatencyMilliseconds,
         t.MaxAsyncSecondaryCommitLatencyMilliseconds = s.MaxAsyncSecondaryCommitLatencyMilliseconds,
-        t.MaxRedoQueueSize = s.MaxRedoQueueSize,
+        t.MaxSyncSecondaryRedoQueueSize = s.MaxSyncSecondaryRedoQueueSize,
         t.MaxProcedureExecTimeViolationCount = s.MaxProcedureExecTimeViolationCount,
         t.MaxProcedureExecTimeMilliseconds = s.MaxProcedureExecTimeMilliseconds,
         t.BatchSleepMilliseconds = s.BatchSleepMilliseconds
@@ -68,7 +68,7 @@ when not matched by target then
         LockTimeoutMilliseconds,
         MaxSyncSecondaryCommitLatencyMilliseconds,
         MaxAsyncSecondaryCommitLatencyMilliseconds,
-        MaxRedoQueueSize,
+        MaxSyncSecondaryRedoQueueSize,
         MaxProcedureExecTimeViolationCount,
         MaxProcedureExecTimeMilliseconds,
         BatchSleepMilliseconds
@@ -81,7 +81,7 @@ when not matched by target then
         LockTimeoutMilliseconds,
         MaxSyncSecondaryCommitLatencyMilliseconds,
         MaxAsyncSecondaryCommitLatencyMilliseconds,
-        MaxRedoQueueSize,
+        MaxSyncSecondaryRedoQueueSize,
         MaxProcedureExecTimeViolationCount,
         MaxProcedureExecTimeMilliseconds,
         BatchSleepMilliseconds

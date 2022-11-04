@@ -6,7 +6,7 @@
 	LockTimeoutMilliseconds int not null,
 	MaxSyncSecondaryCommitLatencyMilliseconds bigint not null,
 	MaxAsyncSecondaryCommitLatencyMilliseconds bigint not null,
-	MaxRedoQueueSize bigint not null,
+	MaxSyncSecondaryRedoQueueSize bigint not null,
 	MaxProcedureExecTimeViolationCount int not null,
 	MaxProcedureExecTimeMilliseconds bigint not null,
 	BatchSleepMilliseconds int not null,

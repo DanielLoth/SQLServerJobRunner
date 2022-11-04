@@ -44,7 +44,7 @@ declare
 	@LockTimeoutMilliseconds int,
 	@MaxSyncSecondaryCommitLatencyMilliseconds bigint,
 	@MaxAsyncSecondaryCommitLatencyMilliseconds bigint,
-	@MaxRedoQueueSize bigint,
+	@MaxSyncSecondaryRedoQueueSize bigint,
 	@MaxProcedureExecTimeViolationCount int,
 	@MaxProcedureExecTimeMilliseconds bigint,
 	@BatchSleepMilliseconds int;
@@ -72,7 +72,7 @@ begin
 			@LockTimeoutMilliseconds = LockTimeoutMilliseconds,
 			@MaxSyncSecondaryCommitLatencyMilliseconds = MaxSyncSecondaryCommitLatencyMilliseconds,
 			@MaxAsyncSecondaryCommitLatencyMilliseconds = MaxAsyncSecondaryCommitLatencyMilliseconds,
-			@MaxRedoQueueSize = MaxRedoQueueSize,
+			@MaxSyncSecondaryRedoQueueSize = MaxSyncSecondaryRedoQueueSize,
 			@MaxProcedureExecTimeViolationCount = MaxProcedureExecTimeViolationCount,
 			@MaxProcedureExecTimeMilliseconds = MaxProcedureExecTimeMilliseconds,
 			@BatchSleepMilliseconds = BatchSleepMilliseconds,
@@ -98,7 +98,7 @@ begin
 
 		exec JobRunner.GetRunnableStatus
 			@JobRunnerName = @JobRunnerName,
-			@MaxRedoQueueSize = @MaxRedoQueueSize,
+			@MaxSyncSecondaryRedoQueueSize = @MaxSyncSecondaryRedoQueueSize,
 			@MaxSyncSecondaryCommitLatencyMilliseconds = @MaxSyncSecondaryCommitLatencyMilliseconds,
 			@MaxAsyncSecondaryCommitLatencyMilliseconds = @MaxAsyncSecondaryCommitLatencyMilliseconds,
 			@IsRunnable = @IsRunnable output;
