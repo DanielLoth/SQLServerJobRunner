@@ -56,55 +56,11 @@ Execute
 
 begin try
 
+	exec JobRunner.DisableAgentJob @JobRunnerName = @JobRunnerName;
+	exec JobRunner.StopAgentJob @JobRunnerName = @JobRunnerName;
+
 	if exists (select 1 from msdb.dbo.sysjobs where [name] = @JobRunnerName)
 	begin
-		exec JobRunner.DisableAgentJob @JobRunnerName = @JobRunnerName;
-
-		set @i = 0;
-		while @i < 5000
-		begin
-			begin try
-				set @i += 1;
-
-				set lock_timeout 500;
-				set deadlock_priority high;
-				set transaction isolation level serializable;
-
-				begin transaction;
-				
-				if exists (
-					select 1
-					from msdb.dbo.sysjobactivity
-					where
-						job_id = (select job_id from msdb.dbo.sysjobs where [name] = @JobRunnerName) and
-						start_execution_date is not null and
-						stop_execution_date is null
-				)
-				begin
-					exec msdb.dbo.sp_stop_job @job_name = @JobRunnerName;
-					commit;
-				end
-				else
-				begin
-					commit;
-					break;
-				end
-
-			end try
-			begin catch
-				if @@trancount != 0 rollback;
-
-				/* Swallow exceptions */
-			end catch
-
-			/* 250 millisecond sleep every 10 attempts */
-			if @i % 10 = 0 waitfor delay '00:00:00.250';
-		end
-
-		set deadlock_priority normal;
-		set lock_timeout -1;
-		set transaction isolation level read committed;
-
 		if exists (
 			select 1
 			from msdb.dbo.sysjobactivity
