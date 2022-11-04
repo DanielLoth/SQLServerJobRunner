@@ -9,22 +9,9 @@ set transaction isolation level read committed;
 
 if @@trancount != 0 throw 50000, N'Running within an open transaction is not allowed', 1;
 
+/* Fast path exit */
+if sys.fn_hadr_is_primary_replica(db_name()) = 0 return 0;
 
-
-/*
-******************************
-Database primary node check
-******************************
-*/
-
-declare
-	@DatabaseName sysname = db_name(),
-	@IsPrimary bit;
-
-set @IsPrimary = sys.fn_hadr_is_primary_replica(@DatabaseName);
---if @IsPrimary = 0 throw 50000, N'@IsPrimary = 0', 1;
-
-if @IsPrimary = 0 return 0;
 
 
 
@@ -109,8 +96,6 @@ begin
 
 		exec JobRunner.GetRunnableStatus
 			@JobRunnerName = @JobRunnerName,
-			@DatabaseName = @DatabaseName,
-			@IsPrimary = @IsPrimary,
 			@MaxRedoQueueSize = @MaxRedoQueueSize,
 			@MaxCommitLatencyMilliseconds = @MaxCommitLatencyMilliseconds,
 			@IsRunnable = @IsRunnable output;

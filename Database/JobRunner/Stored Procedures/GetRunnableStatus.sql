@@ -1,7 +1,5 @@
 ﻿create procedure JobRunner.GetRunnableStatus
 	@JobRunnerName sysname,
-	@DatabaseName sysname,
-	@IsPrimary bit,
 	@MaxRedoQueueSize bigint,
 	@MaxCommitLatencyMilliseconds bigint,
 	@IsRunnable bit output
@@ -10,20 +8,13 @@ as
 set nocount, xact_abort on;
 set transaction isolation level read committed;
 
-set @IsRunnable = 0;
-
 if @@trancount != 0 throw 50000, N'Running within an open transaction is not allowed', 1;
 
+set @IsRunnable = 0;
 
-/* Definite non-primary. No further work. */
-if @IsPrimary = 0 return 0;
-
-/* Not clustered, so runnable. No further work. */
-if @IsPrimary is null
-begin
-	set @IsRunnable = 1;
-	return 0;
-end
+declare
+	@IsPrimary bit = 0,
+	@IsClusterUnhealthy bit = 0;
 
 begin try
 	select
@@ -36,23 +27,28 @@ begin try
 		s.last_commit_time
 	into #Snapshot
 	from sys.dm_hadr_database_replica_states s
-		inner join sys.availability_databases_cluster c
-		on
-			s.group_id = c.group_id and
-			s.group_database_id = c.group_database_id
-	where
-		c.database_name = @DatabaseName
+	where s.database_id = db_id(db_name())
 	option (recompile);
 
+	
+	select @IsPrimary = is_primary_replica
+	from #Snapshot
+	where is_local = 1;
+
+	/* Not primary, no further checks necessary */
+	if @IsPrimary = 0 return 0;
+
+	select @IsClusterUnhealthy = 1
+	from #Snapshot
+	where synchronization_health_desc != N'HEALTHY';
+
+	if @IsClusterUnhealthy = 1 return 0;
+
 	declare
-		@HealthStatus nvarchar(60),
 		@CurrentRedoQueueSize bigint,
 		@CurrentPrimaryCommitTime datetime,
 		@CurrentLatestSecondaryCommitTime datetime,
 		@CurrentCommitLatency bigint;
-
-	select @HealthStatus = synchronization_health_desc from #Snapshot where is_primary_replica = 1;
-	if @HealthStatus != N'HEALTHY' return 0;
 
 	select @CurrentRedoQueueSize = max(isnull(redo_queue_size, 0)) from #Snapshot;
 	if @CurrentRedoQueueSize > @MaxRedoQueueSize return 0;
