@@ -12,7 +12,7 @@
 	MaxProcedureExecTimeMilliseconds bigint not null,
 	BatchSleepMilliseconds int not null,
 
-	constraint UC_JobRunner_JobRunnerName
+	constraint UC_JobRunner_JobRunnerName_PK
 	primary key clustered (JobRunnerName),
 
 	constraint JobRunner_Config_Has_Valid_DeadlockPriority_CK
