@@ -155,16 +155,10 @@ begin try
 
 		if @@error != 0 or @ReturnCode != 0 throw 50000, N'Could not create schedule', 1;
 
-		exec @ReturnCode = msdb.dbo.sp_attach_schedule
-			@job_name = @JobRunnerName,
-			@schedule_name = @ScheduleName
-
+		exec @ReturnCode = msdb.dbo.sp_attach_schedule @job_name = @JobRunnerName, @schedule_name = @ScheduleName
 		if @@error != 0 or @ReturnCode != 0 throw 50000, N'Could not attach schedule to job', 1;
 
-		exec @ReturnCode = msdb.dbo.sp_add_jobserver
-			@job_name = @JobRunnerName,
-			@server_name = @ServerName;
-
+		exec @ReturnCode = msdb.dbo.sp_add_jobserver @job_name = @JobRunnerName, @server_name = @ServerName;
 		if @@error != 0 or @ReturnCode != 0 throw 50000, N'Could not create jobserver', 1;
 
 		exec @ReturnCode = msdb.dbo.sp_update_job @job_name = @JobRunnerName, @enabled = 1;
