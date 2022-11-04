@@ -85,7 +85,7 @@ begin
 		if @HasConfigRow = 0
 		begin
 			set @Msg =
-				N'No configuration data for job runner named ''' + @JobRunnerName + ''' - ' +
+				N'No configuration data for job runner named ''' + @JobRunnerName + N''' - ' +
 				N'insert a configuration row into the table "JobRunner.Config" to resolve this error';
 
 			throw 50000, @Msg, 1;

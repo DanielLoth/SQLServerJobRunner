@@ -4,7 +4,7 @@
 	@ServerName sysname,
 	@DatabaseName sysname,
 	@OwnerLoginName sysname,
-	@Mode varchar(20),
+	@Mode nvarchar(20),
 	@RecurringSecondsInterval int = -1
 as
 
@@ -38,13 +38,13 @@ Validate
 
 if @@trancount != 0 throw 50000, N'Running within an open transaction is not allowed', 1;
 if not exists (select 1 from msdb.dbo.syscategories where [name] = @CategoryName) throw 50000, N'Category does not exist', 1;
-if @Mode not in ('CPUIdle', 'Recurring') throw 50000, N'Invalid @Mode. Use ''CPUIdle'' or ''Recurring''', 1;
-if @Mode = 'Recurring' and @RecurringSecondsInterval < 1 throw 50000, N'Invalid @RecurringSecondsInterval - specify a value greater than 0', 1;
+if @Mode not in (N'CPUIdle', N'Recurring') throw 50000, N'Invalid @Mode. Use ''CPUIdle'' or ''Recurring''', 1;
+if @Mode = N'Recurring' and @RecurringSecondsInterval < 1 throw 50000, N'Invalid @RecurringSecondsInterval - specify a value greater than 0', 1;
 
-set @FrequencyType = case @Mode when 'CPUIdle' then 128 else 4 end; /* 128 = CPU Idle, 4 = daily */
-set @FrequencyInterval = case @Mode when 'CPUIdle' then 0 else 1 end; /* 0 and 1 = unused */
-set @FrequencySubDayType = case @Mode when 'CPUIdle' then 0 else 2 end; /* 0 = unused, 2 = seconds */
-set @FrequencySubDayInterval = case @Mode when 'CPUIdle' then 0 else @RecurringSecondsInterval end;
+set @FrequencyType = case @Mode when N'CPUIdle' then 128 else 4 end; /* 128 = CPU Idle, 4 = daily */
+set @FrequencyInterval = case @Mode when N'CPUIdle' then 0 else 1 end; /* 0 and 1 = unused */
+set @FrequencySubDayType = case @Mode when N'CPUIdle' then 0 else 2 end; /* 0 = unused, 2 = seconds */
+set @FrequencySubDayInterval = case @Mode when N'CPUIdle' then 0 else @RecurringSecondsInterval end;
 
 
 /*

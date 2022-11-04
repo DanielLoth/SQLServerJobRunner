@@ -22,7 +22,7 @@ if not exists (
 		object_name(object_id) = @ProcedureName
 )
 begin
-	set @Msg = N'Procedure "' + @SchemaName + '.' + @ProcedureName + '" does not exist';
+	set @Msg = N'Procedure "' + @SchemaName + N'.' + @ProcedureName + N'" does not exist';
 	throw 50000, @Msg, 1;
 end
 
@@ -36,7 +36,7 @@ outer apply (
 	from sys.parameters p1
 	where
 		p.object_id = p1.object_id and
-		p1.name = '@BatchSize' and
+		p1.name = N'@BatchSize' and
 		p1.user_type_id = 56 /* 56 = int */
 ) d1
 outer apply (
@@ -44,7 +44,7 @@ outer apply (
 	from sys.parameters p1
 	where
 		p.object_id = p1.object_id and
-		p1.name = '@Done'
+		p1.name = N'@Done'
 		and p1.is_output = 1
 		and p1.user_type_id = 104 /* 104 = bit */
 ) d2
@@ -53,7 +53,7 @@ outer apply (
 	from sys.parameters p1
 	where
 		p.object_id = p1.object_id and
-		p1.name not in ('@BatchSize', '@Done')
+		p1.name not in (N'@BatchSize', N'@Done')
 ) d3
 outer apply (
 	select
@@ -68,7 +68,7 @@ where
 if @HasExtraParam = 1
 begin
 	set @Msg =
-		N'Procedure "' + @SchemaName + '.' + @ProcedureName +
+		N'Procedure "' + @SchemaName + N'.' + @ProcedureName +
 		N'" has unsupported parameters. Only the following ' +
 		N'parameters are supported: @BatchSize int, @Done bit output';
 end

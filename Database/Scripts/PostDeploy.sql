@@ -99,64 +99,64 @@ when not matched by source then
 exec JobRunner.AddAgentJob
     @JobRunnerName = @JobRunnerName,
     @CategoryName = @CategoryName,
-    @ServerName = '(local)',
+    @ServerName = N'(local)',
     @DatabaseName = @DatabaseName,
     @OwnerLoginName = N'sa',
-    @Mode = 'Recurring',
+    @Mode = N'Recurring',
     @RecurringSecondsInterval = 10;
 
 exec JobRunner.AddAgentJob
     @JobRunnerName = @CpuIdleJobName,
     @CategoryName = @CategoryName,
-    @ServerName = '(local)',
+    @ServerName = N'(local)',
     @DatabaseName = @DatabaseName,
     @OwnerLoginName = N'sa',
-    @Mode = 'CPUIdle';
+    @Mode = N'CPUIdle';
 
 exec JobRunner.AddRunnableProcedure
     @JobRunnerName = @JobRunnerName,
-    @SchemaName = 'dbo',
-    @ProcedureName = 'NoOpNoParams',
+    @SchemaName = N'dbo',
+    @ProcedureName = N'NoOpNoParams',
     @IsEnabled = 1;
 
 exec JobRunner.AddRunnableProcedure
     @JobRunnerName = @JobRunnerName,
-    @SchemaName = 'dbo',
-    @ProcedureName = 'NoOpBatchSizeParam',
+    @SchemaName = N'dbo',
+    @ProcedureName = N'NoOpBatchSizeParam',
     @IsEnabled = 1;
 
 exec JobRunner.AddRunnableProcedure
     @JobRunnerName = @JobRunnerName,
-    @SchemaName = 'dbo',
-    @ProcedureName = 'NoOpDoneParam',
+    @SchemaName = N'dbo',
+    @ProcedureName = N'NoOpDoneParam',
     @IsEnabled = 1;
 
 exec JobRunner.AddRunnableProcedure
     @JobRunnerName = @JobRunnerName,
-    @SchemaName = 'dbo',
-    @ProcedureName = 'NoOpBatchSizeAndDoneParam',
+    @SchemaName = N'dbo',
+    @ProcedureName = N'NoOpBatchSizeAndDoneParam',
     @IsEnabled = 1;
 
 exec JobRunner.AddRunnableProcedure
     @JobRunnerName = @JobRunnerName,
-    @SchemaName = 'dbo',
-    @ProcedureName = 'NoOpNoParamsSlow',
+    @SchemaName = N'dbo',
+    @ProcedureName = N'NoOpNoParamsSlow',
     @IsEnabled = 1;
 
 exec JobRunner.AddRunnableProcedure
     @JobRunnerName = @JobRunnerName,
-    @SchemaName = 'dbo',
-    @ProcedureName = 'NoOpNoParamsReturnCodeNonZero',
+    @SchemaName = N'dbo',
+    @ProcedureName = N'NoOpNoParamsReturnCodeNonZero',
     @IsEnabled = 1;
 
 exec JobRunner.AddRunnableProcedure
     @JobRunnerName = @JobRunnerName,
-    @SchemaName = 'dbo',
-    @ProcedureName = 'NoOpNoParamsThrow',
+    @SchemaName = N'dbo',
+    @ProcedureName = N'NoOpNoParamsThrow',
     @IsEnabled = 1;
 
 exec JobRunner.AddRunnableProcedure
     @JobRunnerName = @JobRunnerName,
-    @SchemaName = 'dbo',
-    @ProcedureName = 'UpdateGuidValJob',
+    @SchemaName = N'dbo',
+    @ProcedureName = N'UpdateGuidValJob',
     @IsEnabled = 1;

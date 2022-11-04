@@ -15,7 +15,7 @@
 	ErrorProcedure sysname not null constraint JobRunner_RunnableProcedure_ErrorProcedure_DF default N'',
 	ErrorSeverity int not null constraint JobRunner_RunnableProcedure_ErrorSeverity_DF default 0,
 	ErrorState int not null constraint JobRunner_RunnableProcedure_ErrorState_DF default 0,
-	GeneratedProcedureWrapperSql nvarchar(4000) not null constraint JobRunner_RunnableProcedure_GeneratedProcedureWrapperSql_DF default '',
+	GeneratedProcedureWrapperSql nvarchar(4000) not null constraint JobRunner_RunnableProcedure_GeneratedProcedureWrapperSql_DF default N'',
 
 	constraint UC_JobRunner_RunnableProcedure_PK
 	primary key clustered (JobRunnerName, SchemaName, ProcedureName),
