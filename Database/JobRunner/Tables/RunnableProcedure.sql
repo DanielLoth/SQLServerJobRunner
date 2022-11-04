@@ -20,6 +20,11 @@
 	constraint UC_JobRunner_RunnableProcedure_PK
 	primary key clustered (JobRunnerName, SchemaName, ProcedureName),
 
+	/*
+	Just here to ensure that any given stored procedure will be executed
+	by no more than one job runner.
+	Not strictly necessary though.
+	*/
 	constraint U__JobRunner_RunnableProcedure_SchemaName_ProcedureName_AK
 	unique (SchemaName, ProcedureName)
 );

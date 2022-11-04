@@ -160,3 +160,9 @@ exec JobRunner.AddRunnableProcedure
     @SchemaName = N'dbo',
     @ProcedureName = N'UpdateGuidValJob',
     @IsEnabled = 1;
+
+exec JobRunner.AddRunnableProcedure
+    @JobRunnerName = @CpuIdleJobName,
+    @SchemaName = N'dbo',
+    @ProcedureName = N'CpuIdleNoOpWithParams',
+    @IsEnabled = 1;

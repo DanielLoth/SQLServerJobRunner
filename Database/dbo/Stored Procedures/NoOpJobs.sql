@@ -57,3 +57,13 @@ if 1=1 throw 133337, N'Something went wrong...', 1;
 return 0;
 
 go
+
+create procedure dbo.CpuIdleNoOpWithParams
+	@BatchSize int,
+	@Done bit output
+as
+set nocount, xact_abort on;
+select 1 as A;
+return 0;
+
+go
