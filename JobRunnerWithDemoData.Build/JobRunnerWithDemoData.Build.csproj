@@ -1,0 +1,34 @@
+<Project Sdk="MSBuild.Sdk.SqlProj/2.1.0">
+
+	<PropertyGroup>
+		<TargetFramework>netstandard2.0</TargetFramework>
+		<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+		<SqlServerVersion>Sql130</SqlServerVersion>
+		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+		<IsPackable>false</IsPackable>
+		<AssemblyName>JobRunnerWithDemoData</AssemblyName>
+	</PropertyGroup>
+
+	<PropertyGroup>
+		<SuppressTSqlWarnings>71502,71562</SuppressTSqlWarnings>
+		<TreatTSqlWarningsAsErrors>False</TreatTSqlWarningsAsErrors>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<Content Include="..\JobRunner\JobRunner\**\*.sql">
+			<LinkBase>JobRunner</LinkBase>
+		</Content>
+		<Content Include="..\JobRunner\Security\**\*.sql">
+			<LinkBase>Security</LinkBase>
+		</Content>
+
+		<Content Include="..\JobRunnerWithDemoData\dbo\**\*.sql">
+			<LinkBase>dbo</LinkBase>
+		</Content>
+
+		<None Include="..\JobRunnerWithDemoData\Scripts\*.sql">
+			<LinkBase>Scripts\</LinkBase>
+		</None>
+	</ItemGroup>
+
+</Project>

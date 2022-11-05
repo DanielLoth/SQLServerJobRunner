@@ -9,6 +9,8 @@ Project("{00D1A9C2-B5F0-4AF3-8072-F6C62B433612}") = "JobRunnerWithDemoData", "Jo
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JobRunner.Build", "JobRunner.Build\JobRunner.Build.csproj", "{4685F425-CB36-4D05-93A6-FF7FAD9DB7CC}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JobRunnerWithDemoData.Build", "JobRunnerWithDemoData.Build\JobRunnerWithDemoData.Build.csproj", "{411AF9C1-F623-4E61-9F0B-0B7E4C9EBD2A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -31,6 +33,10 @@ Global
 		{4685F425-CB36-4D05-93A6-FF7FAD9DB7CC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4685F425-CB36-4D05-93A6-FF7FAD9DB7CC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4685F425-CB36-4D05-93A6-FF7FAD9DB7CC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{411AF9C1-F623-4E61-9F0B-0B7E4C9EBD2A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{411AF9C1-F623-4E61-9F0B-0B7E4C9EBD2A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{411AF9C1-F623-4E61-9F0B-0B7E4C9EBD2A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{411AF9C1-F623-4E61-9F0B-0B7E4C9EBD2A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
