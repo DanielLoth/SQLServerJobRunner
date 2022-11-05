@@ -5,6 +5,10 @@ set PATH=%SQLPACKAGE_ROOT%;%PATH%
 set TARGET_SERVER=localhost
 set DATABASE_NAME=JobRunnerExample
 
+if not exist "%SQLPACKAGE_ROOT%\sqlpackage.exe" (
+    call restore.cmd
+)
+
 echo Target server^: %TARGET_SERVER%
 echo Target database^: %DATABASE_NAME%
 echo Deploy with demo data? (y/n)

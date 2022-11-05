@@ -19,7 +19,7 @@ $SqlPackageExePath = Join-Path -Path $SqlPackageFolderPath -ChildPath "sqlpackag
 function SafeRemoveFile($Path) {
     try {
         if (Test-Path $Path) {
-            Remove-Item $Path
+            Remove-Item $Path -Force -Recurse
             Write-Host "The path `"$Path`" was removed."
         }
         else
