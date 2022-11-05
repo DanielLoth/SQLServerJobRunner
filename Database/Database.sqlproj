@@ -66,7 +66,6 @@
     <Folder Include="JobRunner\Stored Procedures\" />
     <Folder Include="Security\" />
     <Folder Include="Scripts" />
-    <Folder Include="JobRunner\Sequences" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Localhost.publish.xml" />
@@ -85,7 +84,6 @@
     <Build Include="JobRunner\Stored Procedures\RunNextJob.sql" />
     <Build Include="dbo\Tables\GuidVal.sql" />
     <Build Include="dbo\Stored Procedures\UpdateGuidValJob.sql" />
-    <Build Include="JobRunner\Sequences\ExecutionNumber.sql" />
     <Build Include="JobRunner\Stored Procedures\DisableAgentJob_internal.sql" />
     <Build Include="JobRunner\Stored Procedures\StopAgentJob_internal.sql" />
   </ItemGroup>
