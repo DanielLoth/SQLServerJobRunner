@@ -3,7 +3,7 @@
 as
 
 set nocount, xact_abort on;
-set deadlock_priority low;
+set deadlock_priority normal;
 set lock_timeout -1;
 set transaction isolation level read committed;
 

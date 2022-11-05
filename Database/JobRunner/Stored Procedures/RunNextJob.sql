@@ -9,7 +9,7 @@
 as
 
 set nocount, xact_abort on;
-set deadlock_priority low;
+set deadlock_priority normal;
 set lock_timeout -1;
 set transaction isolation level read committed;
 
@@ -92,29 +92,27 @@ begin catch
 end catch
 
 
-set deadlock_priority @DeadlockPriority;
-
-if @LockTimeoutMilliseconds = -1 set lock_timeout -1; /* Wait forever */
-else if @LockTimeoutMilliseconds = 0 set lock_timeout 0; /* Don't wait at all */
-else if @LockTimeoutMilliseconds = 1000 set lock_timeout 1000;
-else if @LockTimeoutMilliseconds = 2000 set lock_timeout 2000;
-else if @LockTimeoutMilliseconds = 3000 set lock_timeout 3000;
-else if @LockTimeoutMilliseconds = 4000 set lock_timeout 4000;
-else if @LockTimeoutMilliseconds = 5000 set lock_timeout 5000;
-else if @LockTimeoutMilliseconds = 6000 set lock_timeout 6000;
-else if @LockTimeoutMilliseconds = 7000 set lock_timeout 7000;
-else if @LockTimeoutMilliseconds = 8000 set lock_timeout 8000;
-else if @LockTimeoutMilliseconds = 9000 set lock_timeout 9000;
-else if @LockTimeoutMilliseconds = 10000 set lock_timeout 10000;
-else if @LockTimeoutMilliseconds = 15000 set lock_timeout 15000;
-else if @LockTimeoutMilliseconds = 30000 set lock_timeout 30000;
-else if @LockTimeoutMilliseconds = 60000 set lock_timeout 60000;
-else if @LockTimeoutMilliseconds = 120000 set lock_timeout 120000;
-
-
-set @StartDtmUtc = getutcdate();
 
 begin try
+	set deadlock_priority @DeadlockPriority;
+
+	if @LockTimeoutMilliseconds = -1 set lock_timeout -1; /* Wait forever */
+	else if @LockTimeoutMilliseconds = 0 set lock_timeout 0; /* Don't wait at all */
+	else if @LockTimeoutMilliseconds = 1000 set lock_timeout 1000;
+	else if @LockTimeoutMilliseconds = 2000 set lock_timeout 2000;
+	else if @LockTimeoutMilliseconds = 3000 set lock_timeout 3000;
+	else if @LockTimeoutMilliseconds = 4000 set lock_timeout 4000;
+	else if @LockTimeoutMilliseconds = 5000 set lock_timeout 5000;
+	else if @LockTimeoutMilliseconds = 6000 set lock_timeout 6000;
+	else if @LockTimeoutMilliseconds = 7000 set lock_timeout 7000;
+	else if @LockTimeoutMilliseconds = 8000 set lock_timeout 8000;
+	else if @LockTimeoutMilliseconds = 9000 set lock_timeout 9000;
+	else if @LockTimeoutMilliseconds = 10000 set lock_timeout 10000;
+	else if @LockTimeoutMilliseconds = 15000 set lock_timeout 15000;
+	else if @LockTimeoutMilliseconds = 30000 set lock_timeout 30000;
+	else if @LockTimeoutMilliseconds = 60000 set lock_timeout 60000;
+	else if @LockTimeoutMilliseconds = 120000 set lock_timeout 120000;
+
 	if @@trancount != 0
 	begin
 		set @Msg =
@@ -124,6 +122,8 @@ begin try
 
 		throw 50000, @Msg, 1;
 	end
+
+	set @StartDtmUtc = getutcdate();
 
 	exec @ReturnCode = [#JobRunnerWrapper]
 		@BatchSize = @BatchSize,
@@ -148,11 +148,9 @@ begin try
 	set @Done = isnull(@Done, 0);
 end try
 begin catch
-	set deadlock_priority low;
-	set lock_timeout -1;
-
 	if @@trancount != 0 rollback;
 
+	/* Capture all error context for use below */
 	select
 		@ExceptionWasThrown = 1,
 		@EndDtmUtc = getutcdate(),
@@ -167,10 +165,15 @@ begin catch
 
 end catch
 
-set @EndDtmUtc = getutcdate();
-set @ElapsedMilliseconds = datediff(millisecond, @StartDtmUtc, @EndDtmUtc);
+
 
 begin try
+	set deadlock_priority normal;
+	set lock_timeout -1;
+
+	set @EndDtmUtc = getutcdate();
+	set @ElapsedMilliseconds = datediff(millisecond, @StartDtmUtc, @EndDtmUtc);
+
 	begin transaction;
 
 	/* Update columns that should be updated irrespective of success / failure */
