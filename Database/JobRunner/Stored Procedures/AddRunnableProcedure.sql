@@ -155,10 +155,10 @@ when matched then
 			end,
 
 		/* Violation count reset */
-		t.ExecTimeViolationCount =
+		t.ExecutionTimeViolationCount =
 			case
 				when s.ResetViolationCountToZeroOnDeploy = 1 then 0
-				else t.ExecTimeViolationCount
+				else t.ExecutionTimeViolationCount
 			end,
 
 		/* Error column reset */

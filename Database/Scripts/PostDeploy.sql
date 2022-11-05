@@ -247,7 +247,7 @@ when matched then
         t.AttemptedExecutionCount = 0,
         t.SuccessfulExecutionCount = 0,
         t.FailedExecutionCount = 0,
-        t.ExecTimeViolationCount = 0,
+        t.ExecutionTimeViolationCount = 0,
         t.ErrorNumber = 0,
         t.ErrorMessage = N'',
         t.ErrorLine = 0,

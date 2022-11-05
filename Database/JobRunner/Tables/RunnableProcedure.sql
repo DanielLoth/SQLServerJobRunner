@@ -13,8 +13,8 @@
 		constraint JobRunner_RunnableProcedure_SuccessfulExecutionCount_DF default 0,
 	FailedExecutionCount bigint not null
 		constraint JobRunner_RunnableProcedure_FailedExecutionCount_DF default 0,
-	ExecTimeViolationCount int not null
-		constraint JobRunner_RunnableProcedure_ExecTimeViolationCount_DF default 0,
+	ExecutionTimeViolationCount int not null
+		constraint JobRunner_RunnableProcedure_ExecutionTimeViolationCount_DF default 0,
 	ErrorNumber int not null
 		constraint JobRunner_RunnableProcedure_ErrorNumber_DF default 0,
 	ErrorMessage nvarchar(4000) not null

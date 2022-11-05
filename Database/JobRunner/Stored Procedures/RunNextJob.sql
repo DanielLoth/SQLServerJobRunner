@@ -220,7 +220,7 @@ begin try
 
 	update JobRunner.RunnableProcedure
 	set
-		ExecTimeViolationCount += 1
+		ExecutionTimeViolationCount += 1
 	where
 		JobRunnerName = @JobRunnerName and
 		SchemaName = @SchemaName and
@@ -234,7 +234,7 @@ begin try
 		JobRunnerName = @JobRunnerName and
 		SchemaName = @SchemaName and
 		ProcedureName = @ProcedureName and
-		ExecTimeViolationCount >= @MaxProcedureExecutionTimeViolationCount;
+		ExecutionTimeViolationCount >= @MaxProcedureExecutionTimeViolationCount;
 
 	commit;
 end try
