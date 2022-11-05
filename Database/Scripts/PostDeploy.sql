@@ -265,3 +265,12 @@ when matched then
 when not matched by target then
     insert (JobRunnerName, SchemaName, ProcedureName, IsEnabled, GeneratedProcedureWrapperSql)
     values (s.JobRunnerName, s.SchemaName, s.ProcedureName, 1, s.GeneratedProcedureWrapperSql);
+
+
+/*
+Create some rows in dbo.GuidVal so that the nullable
+LastUpdatedDtmUtc column can be backfilled
+*/
+truncate table dbo.GuidVal;
+insert into dbo.GuidVal (Val)
+select top 2000 newid() from sys.all_columns;
