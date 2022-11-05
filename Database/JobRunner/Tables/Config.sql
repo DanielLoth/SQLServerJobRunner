@@ -27,8 +27,11 @@
 	ResetDoneFlagToFalseOnDeploy bit not null
 		constraint JobRunner_Config_ResetDoneFlagToFalseOnDeploy_DF default 0,
 	ResetEnabledFlagToTrueOnDeploy bit not null
-		constraint JobRunner_Config_ResetEnabledFlagToTrueOnDeploy_DF default 0,
-
+		constraint JobRunner_Config_ResetEnabledFlagToTrueOnDeploy_DF default 1,
+	ResetErrorColumnsOnDeploy bit not null
+		constraint JobRunner_Config_ResetErrorColumnsOnDeploy_DF default 1,
+	ResetExecutionCountersOnDeploy bit not null
+		constraint JobRunner_Config_ResetExecutionCountersOnDeploy_DF default 0,
 
 	constraint UC_JobRunner_JobRunnerName_PK
 	primary key clustered (JobRunnerName),
