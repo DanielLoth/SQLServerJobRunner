@@ -30,6 +30,9 @@ declare @JobConfig table (
 	MaxProcedureExecTimeViolationCount int not null,
 	MaxProcedureExecTimeMilliseconds int not null,
 	BatchSleepMilliseconds int not null,
+    ResetViolationCountToZeroOnDeploy bit not null,
+    ResetDoneFlagToFalseOnDeploy bit not null,
+    ResetEnabledFlagToTrueOnDeploy bit not null,
 
     primary key (JobRunnerName)
 );
@@ -46,11 +49,14 @@ insert into @JobConfig (
     MaxAsyncSecondaryRedoQueueSize,
     MaxProcedureExecTimeViolationCount,
     MaxProcedureExecTimeMilliseconds,
-    BatchSleepMilliseconds
+    BatchSleepMilliseconds,
+    ResetViolationCountToZeroOnDeploy,
+    ResetDoneFlagToFalseOnDeploy,
+    ResetEnabledFlagToTrueOnDeploy
 )
 values
-    (@JobRunnerName, 30000, 1000, -5, 3000, 1000, 5000, 300, 5000, 5, 500, 500),
-    (@CpuIdleJobName, 30000, 1000, -5, 3000, 1000, 5000, 300, 5000, 5, 10000, 1000);
+    (@JobRunnerName, 30000, 1000, -5, 3000, 1000, 5000, 300, 5000, 5, 500, 500, 1, 1, 0),
+    (@CpuIdleJobName, 30000, 1000, -5, 3000, 1000, 5000, 300, 5000, 5, 10000, 1000, 1, 1, 0);
 
 merge JobRunner.Config with (serializable, updlock) t
 using @JobConfig s
@@ -68,7 +74,10 @@ when matched then
         t.MaxAsyncSecondaryRedoQueueSize = s.MaxAsyncSecondaryRedoQueueSize,
         t.MaxProcedureExecTimeViolationCount = s.MaxProcedureExecTimeViolationCount,
         t.MaxProcedureExecTimeMilliseconds = s.MaxProcedureExecTimeMilliseconds,
-        t.BatchSleepMilliseconds = s.BatchSleepMilliseconds
+        t.BatchSleepMilliseconds = s.BatchSleepMilliseconds,
+        t.ResetViolationCountToZeroOnDeploy = s.ResetViolationCountToZeroOnDeploy,
+        t.ResetDoneFlagToFalseOnDeploy = s.ResetDoneFlagToFalseOnDeploy,
+        t.ResetEnabledFlagToTrueOnDeploy = s.ResetEnabledFlagToTrueOnDeploy
 when not matched by target then
     insert (
         JobRunnerName,
@@ -82,7 +91,10 @@ when not matched by target then
         MaxAsyncSecondaryRedoQueueSize,
         MaxProcedureExecTimeViolationCount,
         MaxProcedureExecTimeMilliseconds,
-        BatchSleepMilliseconds
+        BatchSleepMilliseconds,
+        ResetViolationCountToZeroOnDeploy,
+        ResetDoneFlagToFalseOnDeploy,
+        ResetEnabledFlagToTrueOnDeploy
     )
     values (
         JobRunnerName,
@@ -96,7 +108,10 @@ when not matched by target then
         MaxAsyncSecondaryRedoQueueSize,
         MaxProcedureExecTimeViolationCount,
         MaxProcedureExecTimeMilliseconds,
-        BatchSleepMilliseconds
+        BatchSleepMilliseconds,
+        ResetViolationCountToZeroOnDeploy,
+        ResetDoneFlagToFalseOnDeploy,
+        ResetEnabledFlagToTrueOnDeploy
     )
 when not matched by source then
     delete;
@@ -124,52 +139,58 @@ exec JobRunner.AddRunnableProcedure
     @JobRunnerName = @JobRunnerName,
     @SchemaName = N'dbo',
     @ProcedureName = N'NoOpNoParams',
-    @IsEnabled = 1;
+    @IsEnabledOnCreation = 1;
 
 exec JobRunner.AddRunnableProcedure
     @JobRunnerName = @JobRunnerName,
     @SchemaName = N'dbo',
     @ProcedureName = N'NoOpBatchSizeParam',
-    @IsEnabled = 1;
+    @IsEnabledOnCreation = 1;
 
 exec JobRunner.AddRunnableProcedure
     @JobRunnerName = @JobRunnerName,
     @SchemaName = N'dbo',
     @ProcedureName = N'NoOpDoneParam',
-    @IsEnabled = 1;
+    @IsEnabledOnCreation = 1;
+
+exec JobRunner.AddRunnableProcedure
+    @JobRunnerName = @JobRunnerName,
+    @SchemaName = N'dbo',
+    @ProcedureName = N'NoOpDoneParamSetsDoneToTrue',
+    @IsEnabledOnCreation = 1;
 
 exec JobRunner.AddRunnableProcedure
     @JobRunnerName = @JobRunnerName,
     @SchemaName = N'dbo',
     @ProcedureName = N'NoOpBatchSizeAndDoneParam',
-    @IsEnabled = 1;
+    @IsEnabledOnCreation = 1;
 
 exec JobRunner.AddRunnableProcedure
     @JobRunnerName = @JobRunnerName,
     @SchemaName = N'dbo',
     @ProcedureName = N'NoOpNoParamsSlow',
-    @IsEnabled = 1;
+    @IsEnabledOnCreation = 1;
 
 exec JobRunner.AddRunnableProcedure
     @JobRunnerName = @JobRunnerName,
     @SchemaName = N'dbo',
     @ProcedureName = N'NoOpNoParamsReturnCodeNonZero',
-    @IsEnabled = 1;
+    @IsEnabledOnCreation = 1;
 
 exec JobRunner.AddRunnableProcedure
     @JobRunnerName = @JobRunnerName,
     @SchemaName = N'dbo',
     @ProcedureName = N'NoOpNoParamsThrow',
-    @IsEnabled = 1;
+    @IsEnabledOnCreation = 1;
 
 exec JobRunner.AddRunnableProcedure
     @JobRunnerName = @JobRunnerName,
     @SchemaName = N'dbo',
     @ProcedureName = N'UpdateGuidValJob',
-    @IsEnabled = 1;
+    @IsEnabledOnCreation = 1;
 
 exec JobRunner.AddRunnableProcedure
     @JobRunnerName = @CpuIdleJobName,
     @SchemaName = N'dbo',
     @ProcedureName = N'CpuIdleNoOpWithParams',
-    @IsEnabled = 1;
+    @IsEnabledOnCreation = 1;

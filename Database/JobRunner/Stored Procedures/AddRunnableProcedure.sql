@@ -2,7 +2,7 @@
 	@JobRunnerName sysname,
 	@SchemaName sysname,
 	@ProcedureName sysname,
-	@IsEnabled bit
+	@IsEnabledOnCreation bit
 as
 
 set nocount, xact_abort on;
@@ -11,6 +11,9 @@ declare
 	@HasBatchSizeParam bit,
 	@HasDoneParam bit,
 	@HasExtraParam bit,
+	@ResetIsEnabled bit,
+	@ResetDoneFlag bit,
+	@ResetViolationCount bit,
 	@Sql nvarchar(4000),
 	@Msg nvarchar(2000);
 
@@ -71,6 +74,8 @@ begin
 		N'Procedure "' + @SchemaName + N'.' + @ProcedureName +
 		N'" has unsupported parameters. Only the following ' +
 		N'parameters are supported: @BatchSize int, @Done bit output';
+
+	throw 50000, @Msg, 1;
 end
 
 exec JobRunner.GetRunnableProcedure
@@ -84,11 +89,19 @@ exec JobRunner.GetRunnableProcedure
 merge JobRunner.RunnableProcedure with (serializable, updlock, rowlock) t
 using (
 	select
-		@JobRunnerName as JobRunnerName,
-		@SchemaName as SchemaName,
-		@ProcedureName as ProcedureName,
-		@IsEnabled as IsEnabled,
-		@Sql as GeneratedProcedureWrapperSql
+		s.*,
+		c.ResetViolationCountToZeroOnDeploy,
+		c.ResetDoneFlagToFalseOnDeploy,
+		c.ResetEnabledFlagToTrueOnDeploy
+	from (
+		select
+			@JobRunnerName as JobRunnerName,
+			@SchemaName as SchemaName,
+			@ProcedureName as ProcedureName,
+			@IsEnabledOnCreation as IsEnabled,
+			@Sql as GeneratedProcedureWrapperSql
+	) s
+	inner join JobRunner.Config c on s.JobRunnerName = c.JobRunnerName
 ) s
 on
 	t.JobRunnerName = s.JobRunnerName and
@@ -97,9 +110,22 @@ on
 when matched then
 	update
 	set
-		t.IsEnabled = s.IsEnabled,
+		t.IsEnabled =
+			case
+				when s.ResetEnabledFlagToTrueOnDeploy = 1 then 1
+				else t.IsEnabled
+			end,
+		t.HasIndicatedDone =
+			case
+				when s.ResetDoneFlagToFalseOnDeploy = 1 then 0
+				else t.HasIndicatedDone
+			end,
 		t.LastElapsedMilliseconds = 0,
-		t.ExecTimeViolationCount = 0,
+		t.ExecTimeViolationCount =
+			case
+				when s.ResetViolationCountToZeroOnDeploy = 1 then 0
+				else t.ExecTimeViolationCount
+			end,
 		t.GeneratedProcedureWrapperSql = s.GeneratedProcedureWrapperSql
 when not matched by target then
 	insert (JobRunnerName, SchemaName, ProcedureName, IsEnabled, GeneratedProcedureWrapperSql)

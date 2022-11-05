@@ -5,7 +5,7 @@
 	@LockTimeoutMilliseconds int,
 	@MaxProcedureExecTimeViolationCount int,
 	@MaxProcedureExecTimeMilliseconds bigint,
-	@Done bit output
+	@FoundJobToExecute bit output
 as
 
 set nocount, xact_abort on;
@@ -28,22 +28,24 @@ declare
 	@ErrorLine int,
 	@ErrorProcedure sysname,
 	@ErrorSeverity int,
-	@ErrorState int;
+	@ErrorState int,
+	@Done bit = 0;
 
-set @Done = 1;
+set @FoundJobToExecute = 0;
 
 select top 1
-	@Done = 0,
+	@FoundJobToExecute = 1,
 	@SchemaName = SchemaName,
 	@ProcedureName = ProcedureName,
 	@CreateOrAlterProcedureQuery = GeneratedProcedureWrapperSql
 from JobRunner.RunnableProcedure
 where
 	JobRunnerName = @JobRunnerName and
-	IsEnabled = 1
+	IsEnabled = 1 and
+	HasIndicatedDone = 0
 order by LastExecutionNumber;
 
-if @Done = 1 return 0;
+if @FoundJobToExecute = 0 return 0;
 
 
 begin try
@@ -106,6 +108,7 @@ begin try
 	exec @ReturnCode = [#JobRunnerWrapper] @BatchSize = @BatchSize, @Done = @Done output;
 	
 	set @EndDtmUtc = getutcdate();
+	set @Done = isnull(@Done, 0);
 
 	if @@trancount != 0 throw 50000, N'Open transaction detected after invoking job procedure. Jobs must commit or rollback all transactions.', 1;
 
@@ -163,7 +166,8 @@ begin try
 		ErrorLine = 0,
 		ErrorProcedure = N'',
 		ErrorSeverity = 0,
-		ErrorState = 0
+		ErrorState = 0,
+		HasIndicatedDone = @Done
 	where
 		JobRunnerName = @JobRunnerName and
 		SchemaName = @SchemaName and
@@ -185,7 +189,10 @@ begin try
 		JobRunnerName = @JobRunnerName and
 		SchemaName = @SchemaName and
 		ProcedureName = @ProcedureName and
-		(ExecTimeViolationCount >= @MaxProcedureExecTimeViolationCount or @ReturnCode != 0);
+		(
+			ExecTimeViolationCount >= @MaxProcedureExecTimeViolationCount or
+			@ReturnCode != 0
+		);
 
 	commit;
 end try

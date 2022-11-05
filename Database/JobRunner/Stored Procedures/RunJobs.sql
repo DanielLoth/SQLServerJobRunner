@@ -48,7 +48,8 @@ declare
 	@MaxAsyncSecondaryRedoQueueSize bigint,
 	@MaxProcedureExecTimeViolationCount int,
 	@MaxProcedureExecTimeMilliseconds bigint,
-	@BatchSleepMilliseconds int;
+	@BatchSleepMilliseconds int,
+	@FoundJobToExecute bit;
 
 /*
 ******************************
@@ -68,7 +69,7 @@ begin
 
 		select
 			@HasConfigRow = 1,
-			@BatchSize = BatchSize,
+			@BatchSize = [BatchSize],
 			@DeadlockPriority = DeadlockPriority,
 			@LockTimeoutMilliseconds = LockTimeoutMilliseconds,
 			@MaxSyncSecondaryCommitLatencyMilliseconds = MaxSyncSecondaryCommitLatencyMilliseconds,
@@ -111,9 +112,8 @@ begin
 		if @IsRunnable = 0 return 0;
 	end
 
-	/* TODO: Run */
 	begin try
-		declare @Done bit = 0;
+		set @FoundJobToExecute = 0;
 
 		exec JobRunner.RunNextJob
 			@JobRunnerName = @JobRunnerName,
@@ -122,11 +122,12 @@ begin
 			@LockTimeoutMilliseconds = @LockTimeoutMilliseconds,
 			@MaxProcedureExecTimeViolationCount = @MaxProcedureExecTimeViolationCount,
 			@MaxProcedureExecTimeMilliseconds = @MaxProcedureExecTimeMilliseconds,
-			@Done = @Done output;
+			@FoundJobToExecute = @FoundJobToExecute output;
 
-		if @Done = 1 return 0;
+		if @FoundJobToExecute = 0 return 0;
 	end try
 	begin catch
+		if @@trancount != 0 rollback;
 		throw;
 	end catch
 

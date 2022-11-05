@@ -23,7 +23,7 @@ return @Result;
 declare @ParamListSql nvarchar(200) = N'';
 set @ParamListSql += case when @HasBatchSizeParam = 1 then N' @BatchSize = @BatchSize' else N'' end;
 set @ParamListSql += case when @HasBatchSizeParam = 1 and @HasDoneParam = 1 then N',' else N'' end;
-set @ParamListSql += case when @HasDoneParam = 1 then N' @Done = @Done' else N'' end;
+set @ParamListSql += case when @HasDoneParam = 1 then N' @Done = @Done output' else N'' end;
 set @ParamListSql += N';';
 
 set @Sql = replace(@Sql, N'%%SchemaName%%', @SchemaName);
