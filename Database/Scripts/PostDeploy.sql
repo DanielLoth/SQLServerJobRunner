@@ -17,42 +17,49 @@ declare @CpuIdleJobName sysname = N'Job Runner (Idle CPU) - ' + @DatabaseName;
 /* Use a valid category name here */
 declare @CategoryName sysname = N'Database Maintenance';
 
+declare @JobConfig table (
+	JobRunnerName sysname not null,
+	TargetJobRunnerExecTimeMilliseconds int not null,
+	[BatchSize] int not null,
+	DeadlockPriority int not null,
+	LockTimeoutMilliseconds int not null,
+	MaxSyncSecondaryCommitLatencyMilliseconds bigint not null,
+	MaxAsyncSecondaryCommitLatencyMilliseconds bigint not null,
+	MaxSyncSecondaryRedoQueueSize bigint not null,
+	MaxAsyncSecondaryRedoQueueSize bigint not null,
+	MaxProcedureExecTimeViolationCount int not null,
+	MaxProcedureExecTimeMilliseconds int not null,
+	BatchSleepMilliseconds int not null,
+
+    primary key (JobRunnerName)
+);
+
+insert into @JobConfig (
+    JobRunnerName,
+    TargetJobRunnerExecTimeMilliseconds,
+    [BatchSize],
+    DeadlockPriority,
+    LockTimeoutMilliseconds,
+    MaxSyncSecondaryCommitLatencyMilliseconds,
+    MaxAsyncSecondaryCommitLatencyMilliseconds,
+    MaxSyncSecondaryRedoQueueSize,
+    MaxAsyncSecondaryRedoQueueSize,
+    MaxProcedureExecTimeViolationCount,
+    MaxProcedureExecTimeMilliseconds,
+    BatchSleepMilliseconds
+)
+values
+    (@JobRunnerName, 30000, 1000, -5, 3000, 1000, 5000, 300, 5000, 5, 500, 500),
+    (@CpuIdleJobName, 30000, 1000, -5, 3000, 1000, 5000, 300, 5000, 5, 10000, 1000);
+
 merge JobRunner.Config with (serializable, updlock) t
-using (
-    select
-        @JobRunnerName as JobRunnerName,
-        30000 as TargetJobRunnerExecTimeMilliseconds,
-        1000 as BatchSize,
-        -5 as DeadlockPriority,
-        3000 as LockTimeoutMilliseconds,
-        1000 as MaxSyncSecondaryCommitLatencyMilliseconds,
-        5000 as MaxAsyncSecondaryCommitLatencyMilliseconds,
-        300 as MaxSyncSecondaryRedoQueueSize,
-        5000 as MaxAsyncSecondaryRedoQueueSize,
-        5 as MaxProcedureExecTimeViolationCount,
-        500 as MaxProcedureExecTimeMilliseconds,
-        500 as BatchSleepMilliseconds
-    union all
-    select
-        @CpuIdleJobName as JobRunnerName,
-        3000 as TargetJobRunnerExecTimeMilliseconds,
-        1000 as BatchSize,
-        -5 as DeadlockPriority,
-        3000 as LockTimeoutMilliseconds,
-        1000 as MaxSyncSecondaryCommitLatencyMilliseconds,
-        5000 as MaxAsyncSecondaryCommitLatencyMilliseconds,
-        300 as MaxSyncSecondaryRedoQueueSize,
-        5000 as MaxAsyncSecondaryRedoQueueSize,
-        5 as MaxProcedureExecTimeViolationCount,
-        10000 as MaxProcedureExecTimeMilliseconds,
-        1000 as BatchSleepMilliseconds
-) s
+using @JobConfig s
 on t.JobRunnerName = s.JobRunnerName
 when matched then
     update
     set
         t.TargetJobRunnerExecTimeMilliseconds = s.TargetJobRunnerExecTimeMilliseconds,
-        t.BatchSize = s.BatchSize,
+        t.[BatchSize] = s.[BatchSize],
         t.DeadlockPriority = s.DeadlockPriority,
         t.LockTimeoutMilliseconds = s.LockTimeoutMilliseconds,
         t.MaxSyncSecondaryCommitLatencyMilliseconds = s.MaxSyncSecondaryCommitLatencyMilliseconds,
@@ -66,7 +73,7 @@ when not matched by target then
     insert (
         JobRunnerName,
         TargetJobRunnerExecTimeMilliseconds,
-        BatchSize,
+        [BatchSize],
         DeadlockPriority,
         LockTimeoutMilliseconds,
         MaxSyncSecondaryCommitLatencyMilliseconds,
@@ -80,7 +87,7 @@ when not matched by target then
     values (
         JobRunnerName,
         TargetJobRunnerExecTimeMilliseconds,
-        BatchSize,
+        [BatchSize],
         DeadlockPriority,
         LockTimeoutMilliseconds,
         MaxSyncSecondaryCommitLatencyMilliseconds,

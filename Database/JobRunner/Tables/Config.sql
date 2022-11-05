@@ -1,7 +1,7 @@
 ﻿create table JobRunner.Config (
 	JobRunnerName sysname not null,
-	TargetJobRunnerExecTimeMilliseconds bigint not null,
-	BatchSize int not null,
+	TargetJobRunnerExecTimeMilliseconds int not null,
+	[BatchSize] int not null,
 	DeadlockPriority int not null,
 	LockTimeoutMilliseconds int not null,
 	MaxSyncSecondaryCommitLatencyMilliseconds bigint not null,
@@ -9,7 +9,7 @@
 	MaxSyncSecondaryRedoQueueSize bigint not null,
 	MaxAsyncSecondaryRedoQueueSize bigint not null,
 	MaxProcedureExecTimeViolationCount int not null,
-	MaxProcedureExecTimeMilliseconds bigint not null,
+	MaxProcedureExecTimeMilliseconds int not null,
 	BatchSleepMilliseconds int not null,
 
 	constraint UC_JobRunner_JobRunnerName_PK
@@ -39,7 +39,7 @@
 	),
 
 	constraint JobRunner_Config_Has_Acceptable_BatchSize_CK
-	check (BatchSize >= 1 and BatchSize <= 5000),
+	check ([BatchSize] >= 1 and [BatchSize] <= 5000),
 
 	constraint JobRunner_Config_Has_Acceptable_BatchSleepMilliseconds_CK
 	check (BatchSleepMilliseconds >= 0 and BatchSleepMilliseconds <= 10000)
