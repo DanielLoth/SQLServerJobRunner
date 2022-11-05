@@ -3,13 +3,13 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.3.32825.248
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{00D1A9C2-B5F0-4AF3-8072-F6C62B433612}") = "JobRunner", "JobRunner\JobRunner.sqlproj", "{48029771-E839-4B16-91B4-FE10F40AF16D}"
+Project("{00D1A9C2-B5F0-4AF3-8072-F6C62B433612}") = "JobRunner", "src\JobRunner\JobRunner.sqlproj", "{48029771-E839-4B16-91B4-FE10F40AF16D}"
 EndProject
-Project("{00D1A9C2-B5F0-4AF3-8072-F6C62B433612}") = "JobRunnerWithDemoData", "JobRunnerWithDemoData\JobRunnerWithDemoData.sqlproj", "{02C185C6-D9C5-4E4B-B5DA-5A4EB77BABCF}"
+Project("{00D1A9C2-B5F0-4AF3-8072-F6C62B433612}") = "JobRunnerWithDemoData", "src\JobRunnerWithDemoData\JobRunnerWithDemoData.sqlproj", "{02C185C6-D9C5-4E4B-B5DA-5A4EB77BABCF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JobRunner.Build", "JobRunner.Build\JobRunner.Build.csproj", "{4685F425-CB36-4D05-93A6-FF7FAD9DB7CC}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JobRunner.Build", "src\JobRunner.Build\JobRunner.Build.csproj", "{4685F425-CB36-4D05-93A6-FF7FAD9DB7CC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JobRunnerWithDemoData.Build", "JobRunnerWithDemoData.Build\JobRunnerWithDemoData.Build.csproj", "{411AF9C1-F623-4E61-9F0B-0B7E4C9EBD2A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JobRunnerWithDemoData.Build", "src\JobRunnerWithDemoData.Build\JobRunnerWithDemoData.Build.csproj", "{411AF9C1-F623-4E61-9F0B-0B7E4C9EBD2A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
