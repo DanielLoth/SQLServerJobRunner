@@ -67,6 +67,16 @@ return 0;
 
 go
 
+create procedure dbo.NoOpNoParamsLeavesTransactionOpen
+as
+set nocount, xact_abort on;
+begin transaction;
+/* Deliberately open transaction that isn't closed */
+/* rollback; */
+return 0;
+
+go
+
 create procedure dbo.CpuIdleNoOpWithParams
 	@BatchSize int,
 	@Done bit output
