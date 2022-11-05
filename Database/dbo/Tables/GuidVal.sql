@@ -4,5 +4,3 @@
 
 	constraint UC_GuidVal_PK primary key (Val)
 );
-
-go

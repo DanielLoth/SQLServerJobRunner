@@ -12,5 +12,3 @@ update v
 set Val = newid(), LastUpdatedDtmUtc = getutcdate();
 
 return 0;
-
-go
