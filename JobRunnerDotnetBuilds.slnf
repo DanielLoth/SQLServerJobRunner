@@ -2,8 +2,8 @@
   "solution": {
     "path": "All.sln",
     "projects": [
-      "JobRunner.Build\\JobRunner.Build.csproj",
-      "JobRunnerWithDemoData.Build\\JobRunnerWithDemoData.Build.csproj"
+      "src\\JobRunner.Build\\JobRunner.Build.csproj",
+      "src\\JobRunnerWithDemoData.Build\\JobRunnerWithDemoData.Build.csproj"
     ]
   }
 }

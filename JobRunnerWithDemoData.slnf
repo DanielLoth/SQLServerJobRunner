@@ -2,7 +2,7 @@
   "solution": {
     "path": "All.sln",
     "projects": [
-      "JobRunnerWithDemoData\\JobRunnerWithDemoData.sqlproj"
+      "src\\JobRunnerWithDemoData\\JobRunnerWithDemoData.sqlproj"
     ]
   }
 }
