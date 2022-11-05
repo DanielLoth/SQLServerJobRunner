@@ -3,7 +3,7 @@
 	@BatchSize int,
 	@DeadlockPriority int,
 	@LockTimeoutMilliseconds int,
-	@MaxProcedureExecTimeViolationCount int,
+	@MaxProcedureExecutionTimeViolationCount int,
 	@MaxProcedureExecTimeMilliseconds bigint,
 	@FoundJobToExecute bit output
 as
@@ -234,7 +234,7 @@ begin try
 		JobRunnerName = @JobRunnerName and
 		SchemaName = @SchemaName and
 		ProcedureName = @ProcedureName and
-		ExecTimeViolationCount >= @MaxProcedureExecTimeViolationCount;
+		ExecTimeViolationCount >= @MaxProcedureExecutionTimeViolationCount;
 
 	commit;
 end try

@@ -46,7 +46,7 @@ declare
 	@MaxAsyncSecondaryCommitLatencyMilliseconds bigint,
 	@MaxSyncSecondaryRedoQueueSize bigint,
 	@MaxAsyncSecondaryRedoQueueSize bigint,
-	@MaxProcedureExecTimeViolationCount int,
+	@MaxProcedureExecutionTimeViolationCount int,
 	@MaxProcedureExecTimeMilliseconds bigint,
 	@BatchSleepMilliseconds int,
 	@FoundJobToExecute bit;
@@ -76,7 +76,7 @@ begin
 			@MaxAsyncSecondaryCommitLatencyMilliseconds = MaxAsyncSecondaryCommitLatencyMilliseconds,
 			@MaxSyncSecondaryRedoQueueSize = MaxSyncSecondaryRedoQueueSize,
 			@MaxAsyncSecondaryRedoQueueSize = MaxAsyncSecondaryRedoQueueSize,
-			@MaxProcedureExecTimeViolationCount = MaxProcedureExecTimeViolationCount,
+			@MaxProcedureExecutionTimeViolationCount = MaxProcedureExecutionTimeViolationCount,
 			@MaxProcedureExecTimeMilliseconds = MaxProcedureExecTimeMilliseconds,
 			@BatchSleepMilliseconds = BatchSleepMilliseconds,
 			@TargetJobRunnerExecTimeMilliseconds = TargetJobRunnerExecTimeMilliseconds
@@ -122,7 +122,7 @@ begin
 			@BatchSize = @BatchSize,
 			@DeadlockPriority = @DeadlockPriority,
 			@LockTimeoutMilliseconds = @LockTimeoutMilliseconds,
-			@MaxProcedureExecTimeViolationCount = @MaxProcedureExecTimeViolationCount,
+			@MaxProcedureExecutionTimeViolationCount = @MaxProcedureExecutionTimeViolationCount,
 			@MaxProcedureExecTimeMilliseconds = @MaxProcedureExecTimeMilliseconds,
 			@FoundJobToExecute = @FoundJobToExecute output;
 
