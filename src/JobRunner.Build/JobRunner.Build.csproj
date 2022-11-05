@@ -21,6 +21,11 @@
 		<Content Include="..\JobRunner\Security\**\*.sql">
 			<LinkBase>Security</LinkBase>
 		</Content>
+
+		<None Include="..\JobRunnerWithDemoData\Scripts\*.sql">
+			<LinkBase>Scripts\</LinkBase>
+		</None>
+		<PostDeploy Include="..\JobRunner\Scripts\PostDeploy.sql" />
 	</ItemGroup>
 
 </Project>
