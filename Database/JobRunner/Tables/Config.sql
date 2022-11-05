@@ -18,8 +18,8 @@
 		constraint JobRunner_Config_MaxAsyncSecondaryRedoQueueSize_DF default 5000,
 	MaxProcedureExecutionTimeViolationCount int not null
 		constraint JobRunner_Config_MaxProcedureExecutionTimeViolationCount_DF default 5,
-	MaxProcedureExecTimeMilliseconds int not null
-		constraint JobRunner_Config_MaxProcedureExecTimeMilliseconds_DF default 2000,
+	MaxProcedureExecutionTimeMilliseconds int not null
+		constraint JobRunner_Config_MaxProcedureExecutionTimeMilliseconds_DF default 2000,
 	BatchSleepMilliseconds int not null
 		constraint JobRunner_Config_BatchSleepMilliseconds_DF default 250,
 	ResetViolationCountToZeroOnDeploy bit not null

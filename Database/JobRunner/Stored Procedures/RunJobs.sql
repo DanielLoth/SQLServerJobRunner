@@ -47,7 +47,7 @@ declare
 	@MaxSyncSecondaryRedoQueueSize bigint,
 	@MaxAsyncSecondaryRedoQueueSize bigint,
 	@MaxProcedureExecutionTimeViolationCount int,
-	@MaxProcedureExecTimeMilliseconds bigint,
+	@MaxProcedureExecutionTimeMilliseconds bigint,
 	@BatchSleepMilliseconds int,
 	@FoundJobToExecute bit;
 
@@ -77,7 +77,7 @@ begin
 			@MaxSyncSecondaryRedoQueueSize = MaxSyncSecondaryRedoQueueSize,
 			@MaxAsyncSecondaryRedoQueueSize = MaxAsyncSecondaryRedoQueueSize,
 			@MaxProcedureExecutionTimeViolationCount = MaxProcedureExecutionTimeViolationCount,
-			@MaxProcedureExecTimeMilliseconds = MaxProcedureExecTimeMilliseconds,
+			@MaxProcedureExecutionTimeMilliseconds = MaxProcedureExecutionTimeMilliseconds,
 			@BatchSleepMilliseconds = BatchSleepMilliseconds,
 			@TargetJobRunnerExecTimeMilliseconds = TargetJobRunnerExecTimeMilliseconds
 		from JobRunner.Config
@@ -123,7 +123,7 @@ begin
 			@DeadlockPriority = @DeadlockPriority,
 			@LockTimeoutMilliseconds = @LockTimeoutMilliseconds,
 			@MaxProcedureExecutionTimeViolationCount = @MaxProcedureExecutionTimeViolationCount,
-			@MaxProcedureExecTimeMilliseconds = @MaxProcedureExecTimeMilliseconds,
+			@MaxProcedureExecutionTimeMilliseconds = @MaxProcedureExecutionTimeMilliseconds,
 			@FoundJobToExecute = @FoundJobToExecute output;
 
 		if @FoundJobToExecute = 0

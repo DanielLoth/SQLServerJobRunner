@@ -4,7 +4,7 @@
 	@DeadlockPriority int,
 	@LockTimeoutMilliseconds int,
 	@MaxProcedureExecutionTimeViolationCount int,
-	@MaxProcedureExecTimeMilliseconds bigint,
+	@MaxProcedureExecutionTimeMilliseconds bigint,
 	@FoundJobToExecute bit output
 as
 
@@ -225,7 +225,7 @@ begin try
 		JobRunnerName = @JobRunnerName and
 		SchemaName = @SchemaName and
 		ProcedureName = @ProcedureName and
-		@ElapsedMilliseconds > @MaxProcedureExecTimeMilliseconds;
+		@ElapsedMilliseconds > @MaxProcedureExecutionTimeMilliseconds;
 
 	update JobRunner.RunnableProcedure
 	set
