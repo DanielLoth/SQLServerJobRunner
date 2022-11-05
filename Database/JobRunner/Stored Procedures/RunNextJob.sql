@@ -4,6 +4,7 @@
 	@DeadlockPriority int,
 	@LockTimeoutMilliseconds int,
 	@MaxProcedureExecutionTimeViolationCount int,
+	@MaxProcedureExecutionFailureCount int,
 	@MaxProcedureExecutionTimeMilliseconds bigint,
 	@FoundJobToExecute bit output
 as
@@ -191,8 +192,7 @@ begin try
 	/* Update columns that should be updated on failure */
 	update JobRunner.RunnableProcedure
 	set
-		IsEnabled = 0,
-		FailedExecutionCount += 1,
+		ExecutionFailedViolationCount += 1,
 		ErrorNumber = @ErrorNumber,
 		ErrorMessage = @ErrorMessage,
 		ErrorLine = @ErrorLine,
@@ -230,6 +230,7 @@ begin try
 		ProcedureName = @ProcedureName and
 		@ElapsedMilliseconds > @MaxProcedureExecutionTimeMilliseconds;
 
+	/* Disable if violation threshold breached */
 	update JobRunner.RunnableProcedure
 	set
 		IsEnabled = 0
@@ -237,7 +238,10 @@ begin try
 		JobRunnerName = @JobRunnerName and
 		SchemaName = @SchemaName and
 		ProcedureName = @ProcedureName and
-		ExecutionTimeViolationCount >= @MaxProcedureExecutionTimeViolationCount;
+		(
+			ExecutionTimeViolationCount >= @MaxProcedureExecutionTimeViolationCount or
+			ExecutionFailedViolationCount >= @MaxProcedureExecutionFailureCount
+		);
 
 	commit;
 end try

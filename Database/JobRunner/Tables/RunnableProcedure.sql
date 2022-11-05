@@ -11,8 +11,8 @@
 		constraint JobRunner_RunnableProcedure_AttemptedExecutionCount_DF default 0,
 	SuccessfulExecutionCount bigint not null
 		constraint JobRunner_RunnableProcedure_SuccessfulExecutionCount_DF default 0,
-	FailedExecutionCount bigint not null
-		constraint JobRunner_RunnableProcedure_FailedExecutionCount_DF default 0,
+	ExecutionFailedViolationCount bigint not null
+		constraint JobRunner_RunnableProcedure_ExecutionFailedViolationCount_DF default 0,
 	ExecutionTimeViolationCount int not null
 		constraint JobRunner_RunnableProcedure_ExecutionTimeViolationCount_DF default 0,
 	ErrorNumber int not null

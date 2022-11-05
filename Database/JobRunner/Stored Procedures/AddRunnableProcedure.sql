@@ -148,13 +148,13 @@ when matched then
 				when ResetExecutionCountersOnDeploy = 1 then 0
 				else t.SuccessfulExecutionCount
 			end,
-		t.FailedExecutionCount =
-			case
-				when ResetExecutionCountersOnDeploy = 1 then 0
-				else t.FailedExecutionCount
-			end,
 
 		/* Violation count reset */
+		t.ExecutionFailedViolationCount =
+			case
+				when ResetViolationCountToZeroOnDeploy = 1 then 0
+				else t.ExecutionFailedViolationCount
+			end,
 		t.ExecutionTimeViolationCount =
 			case
 				when s.ResetViolationCountToZeroOnDeploy = 1 then 0

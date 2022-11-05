@@ -28,6 +28,7 @@ declare @JobConfig table (
 	MaxSyncSecondaryRedoQueueSize bigint not null,
 	MaxAsyncSecondaryRedoQueueSize bigint not null,
 	MaxProcedureExecutionTimeViolationCount int not null,
+    MaxProcedureExecutionFailureCount int not null,
 	MaxProcedureExecutionTimeMilliseconds int not null,
 	BatchSleepMilliseconds int not null,
     ResetViolationCountToZeroOnDeploy bit not null,
@@ -50,6 +51,7 @@ insert into @JobConfig (
     MaxSyncSecondaryRedoQueueSize,
     MaxAsyncSecondaryRedoQueueSize,
     MaxProcedureExecutionTimeViolationCount,
+    MaxProcedureExecutionFailureCount,
     MaxProcedureExecutionTimeMilliseconds,
     BatchSleepMilliseconds,
     ResetViolationCountToZeroOnDeploy,
@@ -59,8 +61,8 @@ insert into @JobConfig (
     ResetExecutionCountersOnDeploy
 )
 values
-    (@JobRunnerName, 30000, 1000, -5, 3000, 1000, 5000, 300, 5000, 5, 500, 500, 1, 1, 1, 1, 1),
-    (@CpuIdleJobName, 30000, 1000, -5, 3000, 1000, 5000, 300, 5000, 5, 10000, 1000, 1, 1, 1, 1, 1);
+    (@JobRunnerName, 30000, 1000, -5, 3000, 1000, 5000, 300, 5000, 5, 5, 500, 500, 1, 1, 1, 1, 1),
+    (@CpuIdleJobName, 30000, 1000, -5, 3000, 1000, 5000, 300, 5000, 5, 5, 10000, 1000, 1, 1, 1, 1, 1);
 
 merge JobRunner.Config with (serializable, updlock) t
 using @JobConfig s
@@ -77,6 +79,7 @@ when matched then
         t.MaxSyncSecondaryRedoQueueSize = s.MaxSyncSecondaryRedoQueueSize,
         t.MaxAsyncSecondaryRedoQueueSize = s.MaxAsyncSecondaryRedoQueueSize,
         t.MaxProcedureExecutionTimeViolationCount = s.MaxProcedureExecutionTimeViolationCount,
+        t.MaxProcedureExecutionFailureCount = s.MaxProcedureExecutionFailureCount,
         t.MaxProcedureExecutionTimeMilliseconds = s.MaxProcedureExecutionTimeMilliseconds,
         t.BatchSleepMilliseconds = s.BatchSleepMilliseconds,
         t.ResetViolationCountToZeroOnDeploy = s.ResetViolationCountToZeroOnDeploy,
@@ -96,6 +99,7 @@ when not matched by target then
         MaxSyncSecondaryRedoQueueSize,
         MaxAsyncSecondaryRedoQueueSize,
         MaxProcedureExecutionTimeViolationCount,
+        MaxProcedureExecutionFailureCount,
         MaxProcedureExecutionTimeMilliseconds,
         BatchSleepMilliseconds,
         ResetViolationCountToZeroOnDeploy,
@@ -115,6 +119,7 @@ when not matched by target then
         MaxSyncSecondaryRedoQueueSize,
         MaxAsyncSecondaryRedoQueueSize,
         MaxProcedureExecutionTimeViolationCount,
+        MaxProcedureExecutionFailureCount,
         MaxProcedureExecutionTimeMilliseconds,
         BatchSleepMilliseconds,
         ResetViolationCountToZeroOnDeploy,
@@ -246,7 +251,7 @@ when matched then
         t.LastElapsedMilliseconds = 0,
         t.AttemptedExecutionCount = 0,
         t.SuccessfulExecutionCount = 0,
-        t.FailedExecutionCount = 0,
+        t.ExecutionFailedViolationCount = 0,
         t.ExecutionTimeViolationCount = 0,
         t.ErrorNumber = 0,
         t.ErrorMessage = N'',
