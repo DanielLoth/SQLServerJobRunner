@@ -5,6 +5,8 @@ VisualStudioVersion = 17.3.32825.248
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{00D1A9C2-B5F0-4AF3-8072-F6C62B433612}") = "Database", "Database\Database.sqlproj", "{48029771-E839-4B16-91B4-FE10F40AF16D}"
 EndProject
+Project("{00D1A9C2-B5F0-4AF3-8072-F6C62B433612}") = "JobRunnerWithDemoData", "JobRunnerWithDemoData\JobRunnerWithDemoData.sqlproj", "{02C185C6-D9C5-4E4B-B5DA-5A4EB77BABCF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -17,6 +19,12 @@ Global
 		{48029771-E839-4B16-91B4-FE10F40AF16D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{48029771-E839-4B16-91B4-FE10F40AF16D}.Release|Any CPU.Build.0 = Release|Any CPU
 		{48029771-E839-4B16-91B4-FE10F40AF16D}.Release|Any CPU.Deploy.0 = Release|Any CPU
+		{02C185C6-D9C5-4E4B-B5DA-5A4EB77BABCF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{02C185C6-D9C5-4E4B-B5DA-5A4EB77BABCF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{02C185C6-D9C5-4E4B-B5DA-5A4EB77BABCF}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{02C185C6-D9C5-4E4B-B5DA-5A4EB77BABCF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{02C185C6-D9C5-4E4B-B5DA-5A4EB77BABCF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{02C185C6-D9C5-4E4B-B5DA-5A4EB77BABCF}.Release|Any CPU.Deploy.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
