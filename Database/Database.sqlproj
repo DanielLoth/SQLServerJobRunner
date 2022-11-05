@@ -58,14 +58,10 @@
   <Import Condition="'$(SQLDBExtensionsRefPath)' == ''" Project="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v$(VisualStudioVersion)\SSDT\Microsoft.Data.Tools.Schema.SqlTasks.targets" />
   <ItemGroup>
     <Folder Include="Properties" />
-    <Folder Include="dbo\" />
-    <Folder Include="dbo\Tables\" />
     <Folder Include="JobRunner\" />
     <Folder Include="JobRunner\Tables\" />
-    <Folder Include="dbo\Stored Procedures\" />
     <Folder Include="JobRunner\Stored Procedures\" />
     <Folder Include="Security\" />
-    <Folder Include="Scripts" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Localhost.publish.xml" />
@@ -79,15 +75,9 @@
     <Build Include="JobRunner\Tables\RunnableProcedure.sql" />
     <Build Include="JobRunner\Stored Procedures\AddRunnableProcedure.sql" />
     <Build Include="JobRunner\Stored Procedures\GetRunnableProcedure.sql" />
-    <Build Include="dbo\Stored Procedures\NoOpJobs.sql" />
     <Build Include="JobRunner\Stored Procedures\RunNextJob.sql" />
-    <Build Include="dbo\Tables\GuidVal.sql" />
-    <Build Include="dbo\Stored Procedures\UpdateGuidValJob.sql" />
     <Build Include="JobRunner\Stored Procedures\DisableAgentJob_internal.sql" />
     <Build Include="JobRunner\Stored Procedures\StopAgentJob_internal.sql" />
-  </ItemGroup>
-  <ItemGroup>
-    <PostDeploy Include="Scripts\PostDeploy.sql" />
   </ItemGroup>
   <ItemGroup>
     <ArtifactReference Include="$(DacPacRootPath)\Extensions\Microsoft\SQLDB\Extensions\SqlServer\130\SqlSchemas\msdb.dacpac">
