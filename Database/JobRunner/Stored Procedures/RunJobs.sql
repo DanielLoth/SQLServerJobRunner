@@ -107,9 +107,11 @@ begin
 			@MaxAsyncSecondaryCommitLatencyMilliseconds = @MaxAsyncSecondaryCommitLatencyMilliseconds,
 			@IsRunnable = @IsRunnable output;
 
-		if @IsRunnable = 0 throw 50000, N'Not runnable', 1;
-
-		if @IsRunnable = 0 return 0;
+		if @IsRunnable = 0
+		begin
+			print N'Not runnable';
+			return 0;
+		end
 	end
 
 	begin try
@@ -124,7 +126,11 @@ begin
 			@MaxProcedureExecTimeMilliseconds = @MaxProcedureExecTimeMilliseconds,
 			@FoundJobToExecute = @FoundJobToExecute output;
 
-		if @FoundJobToExecute = 0 return 0;
+		if @FoundJobToExecute = 0
+		begin
+			print N'No jobs to execute';
+			return 0;
+		end
 	end try
 	begin catch
 		if @@trancount != 0 rollback;

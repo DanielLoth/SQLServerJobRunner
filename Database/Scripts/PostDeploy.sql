@@ -33,6 +33,8 @@ declare @JobConfig table (
     ResetViolationCountToZeroOnDeploy bit not null,
     ResetDoneFlagToFalseOnDeploy bit not null,
     ResetEnabledFlagToTrueOnDeploy bit not null,
+    ResetErrorColumnsOnDeploy bit not null,
+    ResetExecutionCountersOnDeploy bit not null,
 
     primary key (JobRunnerName)
 );
@@ -52,11 +54,13 @@ insert into @JobConfig (
     BatchSleepMilliseconds,
     ResetViolationCountToZeroOnDeploy,
     ResetDoneFlagToFalseOnDeploy,
-    ResetEnabledFlagToTrueOnDeploy
+    ResetEnabledFlagToTrueOnDeploy,
+    ResetErrorColumnsOnDeploy,
+    ResetExecutionCountersOnDeploy
 )
 values
-    (@JobRunnerName, 30000, 1000, -5, 3000, 1000, 5000, 300, 5000, 5, 500, 500, 1, 1, 0),
-    (@CpuIdleJobName, 30000, 1000, -5, 3000, 1000, 5000, 300, 5000, 5, 10000, 1000, 1, 1, 0);
+    (@JobRunnerName, 30000, 1000, -5, 3000, 1000, 5000, 300, 5000, 5, 500, 500, 1, 1, 1, 1, 1),
+    (@CpuIdleJobName, 30000, 1000, -5, 3000, 1000, 5000, 300, 5000, 5, 10000, 1000, 1, 1, 1, 1, 1);
 
 merge JobRunner.Config with (serializable, updlock) t
 using @JobConfig s
@@ -77,7 +81,9 @@ when matched then
         t.BatchSleepMilliseconds = s.BatchSleepMilliseconds,
         t.ResetViolationCountToZeroOnDeploy = s.ResetViolationCountToZeroOnDeploy,
         t.ResetDoneFlagToFalseOnDeploy = s.ResetDoneFlagToFalseOnDeploy,
-        t.ResetEnabledFlagToTrueOnDeploy = s.ResetEnabledFlagToTrueOnDeploy
+        t.ResetEnabledFlagToTrueOnDeploy = s.ResetEnabledFlagToTrueOnDeploy,
+        t.ResetErrorColumnsOnDeploy = s.ResetErrorColumnsOnDeploy,
+        t.ResetExecutionCountersOnDeploy = s.ResetExecutionCountersOnDeploy
 when not matched by target then
     insert (
         JobRunnerName,
@@ -94,7 +100,9 @@ when not matched by target then
         BatchSleepMilliseconds,
         ResetViolationCountToZeroOnDeploy,
         ResetDoneFlagToFalseOnDeploy,
-        ResetEnabledFlagToTrueOnDeploy
+        ResetEnabledFlagToTrueOnDeploy,
+        ResetErrorColumnsOnDeploy,
+        ResetExecutionCountersOnDeploy
     )
     values (
         JobRunnerName,
@@ -111,7 +119,9 @@ when not matched by target then
         BatchSleepMilliseconds,
         ResetViolationCountToZeroOnDeploy,
         ResetDoneFlagToFalseOnDeploy,
-        ResetEnabledFlagToTrueOnDeploy
+        ResetEnabledFlagToTrueOnDeploy,
+        ResetErrorColumnsOnDeploy,
+        ResetExecutionCountersOnDeploy
     )
 when not matched by source then
     delete;
@@ -186,6 +196,12 @@ exec JobRunner.AddRunnableProcedure
 exec JobRunner.AddRunnableProcedure
     @JobRunnerName = @JobRunnerName,
     @SchemaName = N'dbo',
+    @ProcedureName = N'NoOpNoParamsLeavesTransactionOpen',
+    @IsEnabledOnCreation = 1;
+
+exec JobRunner.AddRunnableProcedure
+    @JobRunnerName = @JobRunnerName,
+    @SchemaName = N'dbo',
     @ProcedureName = N'UpdateGuidValJob',
     @IsEnabledOnCreation = 1;
 
@@ -194,3 +210,53 @@ exec JobRunner.AddRunnableProcedure
     @SchemaName = N'dbo',
     @ProcedureName = N'CpuIdleNoOpWithParams',
     @IsEnabledOnCreation = 1;
+
+/*
+Bypass JobRunner.AddRunnableProcedure to insert a non-existent procedure into
+the database.
+This would ordinarily produce an error at SqlPackage.exe deployment time.
+This test is just here to prove that the procedure being missing at runtime
+leads to an appropriate error being raised and correctly handled.
+*/
+merge JobRunner.RunnableProcedure with (serializable, updlock, rowlock) t
+using (
+    select
+        @JobRunnerName as JobRunnerName,
+        N'dbo' as SchemaName,
+        N'ProcedureThatDoesNotExist' as ProcedureName,
+        GeneratedProcedureWrapperSql = N'
+create or alter procedure [#JobRunnerWrapper]
+	@BatchSize int,
+	@Done bit output
+as
+declare @Result int = 0;
+exec @Result = [dbo].[ProcedureThatDoesNotExist];
+return @Result;
+'
+) s
+on
+	t.JobRunnerName = s.JobRunnerName and
+	t.SchemaName = s.SchemaName and
+	t.ProcedureName = s.ProcedureName
+when matched then
+    update
+    set
+        t.IsEnabled = 1,
+        t.HasIndicatedDone = 0,
+        t.LastElapsedMilliseconds = 0,
+        t.AttemptedExecutionCount = 0,
+        t.SuccessfulExecutionCount = 0,
+        t.FailedExecutionCount = 0,
+        t.ExecTimeViolationCount = 0,
+        t.ErrorNumber = 0,
+        t.ErrorMessage = N'',
+        t.ErrorLine = 0,
+        t.ErrorProcedure = N'',
+        t.ErrorSeverity = 0,
+        t.ErrorState = 0,
+        t.FailedWhileCreatingWrapperProcedure = 0,
+        t.DoneDtmUtc = '9999-12-31',
+        t.LastExecutedDtmUtc = '0001-01-01'
+when not matched by target then
+    insert (JobRunnerName, SchemaName, ProcedureName, IsEnabled, GeneratedProcedureWrapperSql)
+    values (s.JobRunnerName, s.SchemaName, s.ProcedureName, 1, s.GeneratedProcedureWrapperSql);

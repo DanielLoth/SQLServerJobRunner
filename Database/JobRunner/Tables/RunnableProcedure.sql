@@ -5,16 +5,14 @@
 	IsEnabled bit not null,
 	HasIndicatedDone bit not null
 		constraint JobRunner_RunnableProcedure_HasIndicatedDone_DF default 0,
-	LastExecutionNumber bigint not null
-		constraint JobRunner_RunnableProcedure_LastExecutionNumber_DF default 0,
-	LastExecutedDtmUtc datetime2 not null
-		constraint JobRunner_RunnableProcedure_LastExecutedDtmUtc_DF default '0001-01-01',
 	LastElapsedMilliseconds bigint not null
 		constraint JobRunner_RunnableProcedure_LastElapsedMilliseconds_DF default 0,
-	LastExitCode int not null
-		constraint JobRunner_RunnableProcedure_LastExitCode_DF default 0,
-	ExecCount bigint not null
-		constraint JobRunner_RunnableProcedure_ExecCount_DF default 0,
+	AttemptedExecutionCount bigint not null
+		constraint JobRunner_RunnableProcedure_AttemptedExecutionCount_DF default 0,
+	SuccessfulExecutionCount bigint not null
+		constraint JobRunner_RunnableProcedure_SuccessfulExecutionCount_DF default 0,
+	FailedExecutionCount bigint not null
+		constraint JobRunner_RunnableProcedure_FailedExecutionCount_DF default 0,
 	ExecTimeViolationCount int not null
 		constraint JobRunner_RunnableProcedure_ExecTimeViolationCount_DF default 0,
 	ErrorNumber int not null
@@ -29,6 +27,12 @@
 		constraint JobRunner_RunnableProcedure_ErrorSeverity_DF default 0,
 	ErrorState int not null
 		constraint JobRunner_RunnableProcedure_ErrorState_DF default 0,
+	FailedWhileCreatingWrapperProcedure bit not null
+		constraint JobRunner_RunnableProcedure_FailedWhileCreatingWrapperProcedure_DF default 0,
+	DoneDtmUtc datetime2 not null
+		constraint JobRunner_RunnableProcedure_DoneDtmUtc_DF default '9999-12-31',
+	LastExecutedDtmUtc datetime2 not null
+		constraint JobRunner_RunnableProcedure_LastExecutedDtmUtc_DF default '0001-01-01',
 	GeneratedProcedureWrapperSql nvarchar(4000) not null
 		constraint JobRunner_RunnableProcedure_GeneratedProcedureWrapperSql_DF default N'',
 

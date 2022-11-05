@@ -23,13 +23,15 @@ declare
 	@EndDtmUtc datetime2(7),
 	@ElapsedMilliseconds bigint,
 	@ReturnCode int,
+	@ExceptionWasThrown bit = 0,
 	@ErrorNumber int,
 	@ErrorMessage nvarchar(4000),
 	@ErrorLine int,
 	@ErrorProcedure sysname,
 	@ErrorSeverity int,
 	@ErrorState int,
-	@Done bit = 0;
+	@Done bit = 0,
+	@Msg nvarchar(500);
 
 set @FoundJobToExecute = 0;
 
@@ -43,15 +45,21 @@ where
 	JobRunnerName = @JobRunnerName and
 	IsEnabled = 1 and
 	HasIndicatedDone = 0
-order by LastExecutionNumber;
+order by LastExecutedDtmUtc;
 
 if @FoundJobToExecute = 0 return 0;
 
 
 begin try
-	exec sp_executesql @CreateOrAlterProcedureQuery;
+	exec sp_executesql @stmt = @CreateOrAlterProcedureQuery;
 end try
 begin catch
+
+	/*
+	Note: This mode of failure normally shouldn't happen.
+	It'd only be due to programmer error (a bug) in the wrapper
+	procedure generation code.
+	*/
 
 	select
 		@ErrorNumber = error_number(),
@@ -65,7 +73,9 @@ begin catch
 
 	update JobRunner.RunnableProcedure
 	set
-		IsEnabled = 0,
+		/* Skip disabling just in case it's something intermittent */
+		/* IsEnabled = 0, */
+		FailedWhileCreatingWrapperProcedure = 1,
 		ErrorNumber = @ErrorNumber,
 		ErrorMessage = @ErrorMessage,
 		ErrorLine = @ErrorLine,
@@ -76,6 +86,8 @@ begin catch
 		JobRunnerName = @JobRunnerName and
 		SchemaName = @SchemaName and
 		ProcedureName = @ProcedureName;
+
+	throw;
 
 end catch
 
@@ -100,24 +112,52 @@ else if @LockTimeoutMilliseconds = 60000 set lock_timeout 60000;
 else if @LockTimeoutMilliseconds = 120000 set lock_timeout 120000;
 
 
+set @StartDtmUtc = getutcdate();
+
 begin try
-	if @@trancount != 0 throw 50000, N'Open transaction detected before invoking job procedure', 1;
+	if @@trancount != 0
+	begin
+		set @Msg =
+			N'Open transaction detected before invoking job. ' +
+			N'This should not happen, and most likely indicates a programming error (bug)' +
+			N'within the "JobRunner.RunNextJob" procedure';
 
-	set @StartDtmUtc = getutcdate();
+		throw 50000, @Msg, 1;
+	end
 
-	exec @ReturnCode = [#JobRunnerWrapper] @BatchSize = @BatchSize, @Done = @Done output;
+	exec @ReturnCode = [#JobRunnerWrapper]
+		@BatchSize = @BatchSize,
+		@Done = @Done output;
+
+	/*
+	Technically should not happen.
+	SQL Server will raise exception with error number 266 on its own.
+	*/
+	if @@trancount != 0
+	begin
+		set @Msg = N'Open transaction detected after invoking job. Jobs must commit or rollback all transactions.';
+		throw 50000, @Msg, 1;
+	end
 	
-	set @EndDtmUtc = getutcdate();
+	if @ReturnCode != 0
+	begin
+		set @Msg = N'Non-zero return code (' + cast(@ReturnCode as varchar(20)) + N')'; 
+		throw 50000, @Msg, 1;
+	end
+
 	set @Done = isnull(@Done, 0);
-
-	if @@trancount != 0 throw 50000, N'Open transaction detected after invoking job procedure. Jobs must commit or rollback all transactions.', 1;
-
-	set deadlock_priority low;
-	set lock_timeout -1;
 end try
 begin catch
+	set deadlock_priority low;
+	set lock_timeout -1;
+
+	if @@trancount != 0 rollback;
 
 	select
+		@ExceptionWasThrown = 1,
+		@EndDtmUtc = getutcdate(),
+		@ElapsedMilliseconds = datediff(millisecond, @StartDtmUtc, @EndDtmUtc),
+		@Done = 0,
 		@ErrorNumber = error_number(),
 		@ErrorMessage = error_message(),
 		@ErrorLine = error_line(),
@@ -125,14 +165,31 @@ begin catch
 		@ErrorSeverity = error_severity(),
 		@ErrorState = error_state();
 
-	if @@trancount != 0 rollback;
+end catch
 
-	set deadlock_priority low;
-	set lock_timeout -1;
+set @EndDtmUtc = getutcdate();
+set @ElapsedMilliseconds = datediff(millisecond, @StartDtmUtc, @EndDtmUtc);
 
+begin try
+	begin transaction;
+
+	/* Update columns that should be updated irrespective of success / failure */
+	update JobRunner.RunnableProcedure
+	set
+		LastExecutedDtmUtc = @EndDtmUtc,
+		LastElapsedMilliseconds = @ElapsedMilliseconds,
+		AttemptedExecutionCount += 1,
+		FailedWhileCreatingWrapperProcedure = 0
+	where
+		JobRunnerName = @JobRunnerName and
+		SchemaName = @SchemaName and
+		ProcedureName = @ProcedureName;
+
+	/* Update columns that should be updated on failure */
 	update JobRunner.RunnableProcedure
 	set
 		IsEnabled = 0,
+		FailedExecutionCount += 1,
 		ErrorNumber = @ErrorNumber,
 		ErrorMessage = @ErrorMessage,
 		ErrorLine = @ErrorLine,
@@ -142,40 +199,28 @@ begin catch
 	where
 		JobRunnerName = @JobRunnerName and
 		SchemaName = @SchemaName and
-		ProcedureName = @ProcedureName;
+		ProcedureName = @ProcedureName and
+		@ExceptionWasThrown = 1;
 
-end catch
-
-
-set @ElapsedMilliseconds = datediff(millisecond, @StartDtmUtc, @EndDtmUtc);
-
-
-
-begin try
-	begin transaction;
-
+	/* Update columns that should be updated on success */
 	update JobRunner.RunnableProcedure
 	set
-		LastExecutionNumber = next value for ExecutionNumber,
-		LastExecutedDtmUtc = @StartDtmUtc,
-		LastElapsedMilliseconds = @ElapsedMilliseconds,
-		LastExitCode = @ReturnCode,
-		ExecCount = ExecCount + 1,
-		ErrorNumber = 0,
-		ErrorMessage = N'',
-		ErrorLine = 0,
-		ErrorProcedure = N'',
-		ErrorSeverity = 0,
-		ErrorState = 0,
-		HasIndicatedDone = @Done
+		SuccessfulExecutionCount += 1,
+		HasIndicatedDone = @Done,
+		DoneDtmUtc =
+			case
+				when @Done = 1 then @EndDtmUtc
+				else '9999-12-31'
+			end
 	where
 		JobRunnerName = @JobRunnerName and
 		SchemaName = @SchemaName and
-		ProcedureName = @ProcedureName;
+		ProcedureName = @ProcedureName and
+		@ExceptionWasThrown = 0;
 
 	update JobRunner.RunnableProcedure
 	set
-		ExecTimeViolationCount = ExecTimeViolationCount + 1
+		ExecTimeViolationCount += 1
 	where
 		JobRunnerName = @JobRunnerName and
 		SchemaName = @SchemaName and
@@ -189,10 +234,7 @@ begin try
 		JobRunnerName = @JobRunnerName and
 		SchemaName = @SchemaName and
 		ProcedureName = @ProcedureName and
-		(
-			ExecTimeViolationCount >= @MaxProcedureExecTimeViolationCount or
-			@ReturnCode != 0
-		);
+		ExecTimeViolationCount >= @MaxProcedureExecTimeViolationCount;
 
 	commit;
 end try

@@ -6,6 +6,10 @@
 as
 
 set nocount, xact_abort on;
+set deadlock_priority high;
+set lock_timeout -1;
+
+if @@trancount != 0 throw 50000, N'Open transaction not permitted', 1;
 
 declare
 	@HasBatchSizeParam bit,
@@ -92,7 +96,9 @@ using (
 		s.*,
 		c.ResetViolationCountToZeroOnDeploy,
 		c.ResetDoneFlagToFalseOnDeploy,
-		c.ResetEnabledFlagToTrueOnDeploy
+		c.ResetEnabledFlagToTrueOnDeploy,
+		c.ResetErrorColumnsOnDeploy,
+		c.ResetExecutionCountersOnDeploy
 	from (
 		select
 			@JobRunnerName as JobRunnerName,
@@ -110,23 +116,85 @@ on
 when matched then
 	update
 	set
+		/* Enabled flag reset */
 		t.IsEnabled =
 			case
 				when s.ResetEnabledFlagToTrueOnDeploy = 1 then 1
 				else t.IsEnabled
 			end,
+
+		/* Done flag, and done datetime2 column, reset */
 		t.HasIndicatedDone =
 			case
 				when s.ResetDoneFlagToFalseOnDeploy = 1 then 0
 				else t.HasIndicatedDone
 			end,
-		t.LastElapsedMilliseconds = 0,
+		t.DoneDtmUtc =
+			case
+				when s.ResetDoneFlagToFalseOnDeploy = 1 then '9999-12-31'
+				else t.DoneDtmUtc
+			end,
+
+		/*t.LastElapsedMilliseconds = 0, */ /* Probably don't need to reset this */
+
+		/* Execution counter reset */
+		t.AttemptedExecutionCount =
+			case
+				when ResetExecutionCountersOnDeploy = 1 then 0
+				else t.AttemptedExecutionCount
+			end,
+		t.SuccessfulExecutionCount =
+			case
+				when ResetExecutionCountersOnDeploy = 1 then 0
+				else t.SuccessfulExecutionCount
+			end,
+		t.FailedExecutionCount =
+			case
+				when ResetExecutionCountersOnDeploy = 1 then 0
+				else t.FailedExecutionCount
+			end,
+
+		/* Violation count reset */
 		t.ExecTimeViolationCount =
 			case
 				when s.ResetViolationCountToZeroOnDeploy = 1 then 0
 				else t.ExecTimeViolationCount
 			end,
-		t.GeneratedProcedureWrapperSql = s.GeneratedProcedureWrapperSql
+
+		/* Error column reset */
+		t.ErrorNumber =
+			case
+				when s.ResetErrorColumnsOnDeploy = 1 then 0
+				else t.ErrorNumber
+			end,
+		t.ErrorMessage =
+			case
+				when s.ResetErrorColumnsOnDeploy = 1 then N''
+				else t.ErrorMessage
+			end,
+		t.ErrorLine =
+			case
+				when s.ResetErrorColumnsOnDeploy = 1 then 0
+				else t.ErrorLine
+			end,
+		t.ErrorProcedure =
+			case
+				when s.ResetErrorColumnsOnDeploy = 1 then N''
+				else t.ErrorProcedure
+			end,
+		t.ErrorSeverity =
+			case
+				when s.ResetErrorColumnsOnDeploy = 1 then 0
+				else t.ErrorSeverity
+			end,
+		t.ErrorState =
+			case
+				when s.ResetErrorColumnsOnDeploy = 1 then 0
+				else t.ErrorState
+			end,
+
+		t.GeneratedProcedureWrapperSql = s.GeneratedProcedureWrapperSql,
+		t.FailedWhileCreatingWrapperProcedure = 0
 when not matched by target then
 	insert (JobRunnerName, SchemaName, ProcedureName, IsEnabled, GeneratedProcedureWrapperSql)
 	values (s.JobRunnerName, s.SchemaName, s.ProcedureName, s.IsEnabled, s.GeneratedProcedureWrapperSql);
