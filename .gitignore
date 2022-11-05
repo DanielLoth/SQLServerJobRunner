@@ -349,5 +349,10 @@ MigrationBackup/
 # Ionide (cross platform F# VS Code tools) working folder
 .ionide/
 
+# Local versions of dotnet.exe and sqlpackage.exe installed for build/deploy
 .dotnet/
 .sqlpackage/
+
+# sqlpackage.exe DACPAC script / report files
+*.deployreport.xml
+*.deployscript.sql
