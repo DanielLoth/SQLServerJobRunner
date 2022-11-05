@@ -5,6 +5,8 @@ set PATH=%SQLPACKAGE_ROOT%;%PATH%
 set TARGET_SERVER=localhost
 set DATABASE_NAME=JobRunnerExample
 
+echo Target server^: %TARGET_SERVER%
+echo Target database^: %DATABASE_NAME%
 echo Deploy with demo data? (y/n)
 set /p flag=
 if /i "%flag%" == "y" goto demo
@@ -31,6 +33,8 @@ sqlpackage.exe ^
 /OverwriteFiles:True ^
 /TargetServerName:%TARGET_SERVER% ^
 /TargetDatabaseName:%DATABASE_NAME% ^
+/TargetEncryptConnection:True ^
+/TargetTrustServerCertificate:True ^
 /p:CreateNewDatabase=True ^
 /p:IgnoreWhitespace=True ^
 /p:IgnoreSemicolonBetweenStatements=True
