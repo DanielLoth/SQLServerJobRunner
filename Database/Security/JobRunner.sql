@@ -1,3 +1,1 @@
-﻿CREATE SCHEMA [JobRunner]
-    AUTHORIZATION [dbo];
-
+﻿create schema JobRunner authorization dbo;
