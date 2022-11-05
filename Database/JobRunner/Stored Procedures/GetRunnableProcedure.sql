@@ -7,6 +7,12 @@
 	@GeneratedProcedureSql nvarchar(4000) output
 as
 
+set nocount, xact_abort on;
+set deadlock_priority high;
+set lock_timeout -1;
+
+if @@trancount != 0 throw 50000, N'Open transaction not permitted', 1;
+
 declare @Sql nvarchar(4000) = N'
 create or alter procedure [#JobRunnerWrapper]
 	@BatchSize int,
