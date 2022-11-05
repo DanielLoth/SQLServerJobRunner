@@ -69,37 +69,37 @@
     <Build Include="dbo\Tables\GuidVal.sql" />
     <Build Include="dbo\Stored Procedures\NoOpJobs.sql" />
     <Build Include="dbo\Stored Procedures\UpdateGuidValJob.sql" />
-    <Build Include="..\Database\JobRunner\Tables\Config.sql">
+    <Build Include="..\JobRunner\JobRunner\Tables\Config.sql">
       <Link>JobRunner\Tables\Config.sql</Link>
     </Build>
-    <Build Include="..\Database\JobRunner\Tables\RunnableProcedure.sql">
+    <Build Include="..\JobRunner\JobRunner\Tables\RunnableProcedure.sql">
       <Link>JobRunner\Tables\RunnableProcedure.sql</Link>
     </Build>
-    <Build Include="..\Database\JobRunner\Stored Procedures\AddAgentJob.sql">
+    <Build Include="..\JobRunner\JobRunner\Stored Procedures\AddAgentJob.sql">
       <Link>JobRunner\Stored Procedures\AddAgentJob.sql</Link>
     </Build>
-    <Build Include="..\Database\JobRunner\Stored Procedures\AddRunnableProcedure.sql">
+    <Build Include="..\JobRunner\JobRunner\Stored Procedures\AddRunnableProcedure.sql">
       <Link>JobRunner\Stored Procedures\AddRunnableProcedure.sql</Link>
     </Build>
-    <Build Include="..\Database\JobRunner\Stored Procedures\DisableAgentJob_internal.sql">
+    <Build Include="..\JobRunner\JobRunner\Stored Procedures\DisableAgentJob_internal.sql">
       <Link>JobRunner\Stored Procedures\DisableAgentJob_internal.sql</Link>
     </Build>
-    <Build Include="..\Database\JobRunner\Stored Procedures\GetRunnableProcedure.sql">
+    <Build Include="..\JobRunner\JobRunner\Stored Procedures\GetRunnableProcedure.sql">
       <Link>JobRunner\Stored Procedures\GetRunnableProcedure.sql</Link>
     </Build>
-    <Build Include="..\Database\JobRunner\Stored Procedures\GetRunnableStatus.sql">
+    <Build Include="..\JobRunner\JobRunner\Stored Procedures\GetRunnableStatus.sql">
       <Link>JobRunner\Stored Procedures\GetRunnableStatus.sql</Link>
     </Build>
-    <Build Include="..\Database\JobRunner\Stored Procedures\RunJobs.sql">
+    <Build Include="..\JobRunner\JobRunner\Stored Procedures\RunJobs.sql">
       <Link>JobRunner\Stored Procedures\RunJobs.sql</Link>
     </Build>
-    <Build Include="..\Database\JobRunner\Stored Procedures\RunNextJob.sql">
+    <Build Include="..\JobRunner\JobRunner\Stored Procedures\RunNextJob.sql">
       <Link>JobRunner\Stored Procedures\RunNextJob.sql</Link>
     </Build>
-    <Build Include="..\Database\JobRunner\Stored Procedures\StopAgentJob_internal.sql">
+    <Build Include="..\JobRunner\JobRunner\Stored Procedures\StopAgentJob_internal.sql">
       <Link>JobRunner\Stored Procedures\StopAgentJob_internal.sql</Link>
     </Build>
-    <Build Include="..\Database\Security\JobRunner.sql">
+    <Build Include="..\JobRunner\Security\JobRunner.sql">
       <Link>Security\JobRunner.sql</Link>
     </Build>
   </ItemGroup>
