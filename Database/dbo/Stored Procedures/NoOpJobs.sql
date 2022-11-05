@@ -24,6 +24,15 @@ return 0;
 
 go
 
+create procedure dbo.NoOpDoneParamSetsDoneToTrue
+	@Done bit output
+as
+set nocount, xact_abort on;
+set @Done = 1;
+return 0;
+
+go
+
 create procedure dbo.NoOpBatchSizeAndDoneParam
 	@BatchSize int,
 	@Done bit output
