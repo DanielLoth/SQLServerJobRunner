@@ -2,7 +2,13 @@
 
 Make it easy for developers to run background jobs - safely.
 
-I'm happy to accept contributions to this code via pull request. If you have ideas, please create an issue to discuss.
+## Contributing
+
+I'm happy to accept contributions to this code via pull request. Please reach out to discuss before committing substantial time to writing any code though.
+
+If you have any ideas or suggestions please [start a discussion](https://github.com/DanielLoth/SQLServerJobRunner/discussions).
+
+If you find any bugs please [raise an issue](https://github.com/DanielLoth/SQLServerJobRunner/issues).
 
 ## Quick start
 
