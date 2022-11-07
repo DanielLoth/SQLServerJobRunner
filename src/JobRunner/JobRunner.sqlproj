@@ -81,8 +81,8 @@
     <Build Include="JobRunner\Stored Procedures\AddRunnableProcedure.sql" />
     <Build Include="JobRunner\Stored Procedures\GetRunnableProcedure.sql" />
     <Build Include="JobRunner\Stored Procedures\RunNextJob.sql" />
-    <Build Include="JobRunner\Stored Procedures\DisableAgentJob_internal.sql" />
-    <Build Include="JobRunner\Stored Procedures\StopAgentJob_internal.sql" />
+    <Build Include="JobRunner\Stored Procedures\AddOrUpdateSchedule_internal.sql" />
+    <Build Include="JobRunner\Stored Procedures\DeleteJob_internal.sql" />
   </ItemGroup>
   <ItemGroup>
     <ArtifactReference Include="$(DacPacRootPath)\Extensions\Microsoft\SQLDB\Extensions\SqlServer\130\SqlSchemas\msdb.dacpac">

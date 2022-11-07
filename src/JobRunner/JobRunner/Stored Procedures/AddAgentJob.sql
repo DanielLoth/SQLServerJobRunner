@@ -5,22 +5,24 @@
 	@DatabaseName sysname,
 	@OwnerLoginName sysname,
 	@Mode nvarchar(20),
-	@RecurringSecondsInterval int = -1
+	@RecurringSecondsInterval int = -1,
+	@DeleteJobHistory bit = 0
 as
 
 set nocount, xact_abort on;
 set transaction isolation level read committed;
+set deadlock_priority low;
+set lock_timeout -1;
 
 declare
 	@JobId uniqueidentifier,
-	@FrequencyType int,
-	@FrequencyInterval int,
-	@FrequencySubDayType int,
-	@FrequencySubDayInterval int,
 	@ScheduleName sysname = @JobRunnerName,
 	@JobStepName sysname = N'Run JobRunner.RunJobs procedure',
 	@JobDescription nvarchar(512) = N'Run background job stored procedures',
-	@ReturnCode int;
+	@i int = 0,
+	@MaxRetryCount int = 50,
+	@ReturnCode int,
+	@Msg nvarchar(200);
 
 declare	@Command nvarchar(2000) =
 	N'if exists ' +
@@ -41,11 +43,6 @@ if not exists (select 1 from msdb.dbo.syscategories where [name] = @CategoryName
 if @Mode not in (N'CPUIdle', N'Recurring') throw 50000, N'Invalid @Mode. Use ''CPUIdle'' or ''Recurring''', 1;
 if @Mode = N'Recurring' and @RecurringSecondsInterval < 1 throw 50000, N'Invalid @RecurringSecondsInterval - specify a value greater than 0', 1;
 
-set @FrequencyType = case @Mode when N'CPUIdle' then 128 else 4 end; /* 128 = CPU Idle, 4 = daily */
-set @FrequencyInterval = case @Mode when N'CPUIdle' then 0 else 1 end; /* 0 and 1 = unused */
-set @FrequencySubDayType = case @Mode when N'CPUIdle' then 0 else 2 end; /* 0 = unused, 2 = seconds */
-set @FrequencySubDayInterval = case @Mode when N'CPUIdle' then 0 else @RecurringSecondsInterval end;
-
 
 /*
 ********************
@@ -54,117 +51,96 @@ Execute
 */
 
 begin try
-
-	exec JobRunner.DisableAgentJob_internal @JobRunnerName = @JobRunnerName;
-	exec JobRunner.StopAgentJob_internal @JobRunnerName = @JobRunnerName;
-
-	if exists (select 1 from msdb.dbo.sysjobs where [name] = @JobRunnerName)
+	while @i < @MaxRetryCount
 	begin
-		exec @ReturnCode = msdb.dbo.sp_update_job
-			@job_name = @JobRunnerName,
-			@description = @JobDescription,
-			@start_step_id = 1,
-			@category_name = @CategoryName,
-			@owner_login_name = @OwnerLoginName;
+		begin try
+			set @i += 1;
 
-		if @@error != 0 or @ReturnCode != 0 throw 50000, N'Could not update existing job', 1;
+			set @Msg = N'Attempting to add SQL Agent job... (attempt ' + cast(@i as nvarchar(10)) + N')';
+			print @Msg;
 
-		exec @ReturnCode = msdb.dbo.sp_update_jobstep
-			@job_name = @JobRunnerName,
-			@step_name = @JobStepName,
-			@step_id = 1,
-			@cmdexec_success_code = 0,
-			@on_success_action = 1,
-			@on_success_step_id = 0,
-			@on_fail_action = 2,
-			@on_fail_step_id = 0,
-			@retry_attempts = 0,
-			@retry_interval = 0,
-			@os_run_priority = 0,
-			@subsystem = N'TSQL',
-			@command = @Command,
-			@database_name = @DatabaseName,
-			@flags = 0;
+			exec JobRunner.DeleteJob_internal
+				@JobRunnerName = @JobRunnerName,
+				@DeleteJobHistory = @DeleteJobHistory;
 
-		if @@error != 0 or @ReturnCode != 0 throw 50000, N'Could not update existing jobstep', 1;
+			exec JobRunner.AddOrUpdateSchedule_internal
+				@ScheduleName = @ScheduleName,
+				@OwnerLoginName = @OwnerLoginName,
+				@Mode = @Mode,
+				@RecurringSecondsInterval = @RecurringSecondsInterval;
 
-		exec @ReturnCode = msdb.dbo.sp_update_schedule
-			@name = @ScheduleName,
-			@enabled = 1,
-			@freq_type = @FrequencyType,
-			@freq_interval = @FrequencyInterval,
-			@freq_subday_type = @FrequencySubDayType,
-			@freq_subday_interval = @FrequencySubDayInterval,
-			@freq_relative_interval = 0,
-			@freq_recurrence_factor = 0,
-			@active_start_date = 20220101,
-			@active_end_date = 99991231,
-			@active_start_time = 0,
-			@active_end_time = 235959;
+			begin transaction;
 
-		if @@error != 0 or @ReturnCode != 0 throw 50000, N'Could not update existing job schedule', 1;
+			if exists (
+				select job_id
+				from msdb.dbo.sysjobs with (updlock, paglock, serializable)
+				where [name] = @JobRunnerName
+			)
+			begin
+				rollback;
+				print N'Job re-discovered after supposedly successful deletion. Re-attempting.';
+				continue;
+			end
 
-		exec @ReturnCode = msdb.dbo.sp_update_job @job_name = @JobRunnerName, @enabled = 1;
-		if @@error != 0 or @ReturnCode != 0 throw 50000, N'Could not re-enable existing job', 1;
+			print N'Adding job...';
+
+			exec @ReturnCode = msdb.dbo.sp_add_job
+				@job_name = @JobRunnerName,
+				@enabled = 0,
+				@description = @JobDescription,
+				@start_step_id = 1,
+				@category_name = @CategoryName,
+				@owner_login_name = @OwnerLoginName;
+
+			if @@error != 0 or @ReturnCode != 0 throw 50000, N'Could not create job', 1;
+
+			print N'Adding jobstep...';
+
+			exec @ReturnCode = msdb.dbo.sp_add_jobstep
+				@job_name = @JobRunnerName,
+				@step_name = @JobStepName,
+				@step_id = 1,
+				@cmdexec_success_code = 0,
+				@on_success_action = 1,
+				@on_success_step_id = 0,
+				@on_fail_action = 2,
+				@on_fail_step_id = 0,
+				@retry_attempts = 0,
+				@retry_interval = 0,
+				@os_run_priority = 0,
+				@subsystem = N'TSQL',
+				@command = @Command,
+				@database_name = @DatabaseName,
+				@flags = 0;
+
+			if @@error != 0 or @ReturnCode != 0 throw 50000, N'Could not create job step', 1;
+
+			print N'Attaching schedule...';
+
+			exec @ReturnCode = msdb.dbo.sp_attach_schedule @job_name = @JobRunnerName, @schedule_name = @ScheduleName
+			if @@error != 0 or @ReturnCode != 0 throw 50000, N'Could not attach schedule to job', 1;
+
+			print N'Creating job server...';
+
+			exec @ReturnCode = msdb.dbo.sp_add_jobserver @job_name = @JobRunnerName, @server_name = @ServerName;
+			if @@error != 0 or @ReturnCode != 0 throw 50000, N'Could not create jobserver', 1;
+
+			print N'Enabling job...';
+
+			exec @ReturnCode = msdb.dbo.sp_update_job @job_name = @JobRunnerName, @enabled = 1;
+			if @@error != 0 or @ReturnCode != 0 throw 50000, N'Could not enable job after creating it', 1;
+
+			print N'Done. SQL Agent job created and enabled.';
+
+			commit;
+
+			return 0;
+		end try
+		begin catch
+			if @@trancount != 0 rollback;
+			if error_number() != 1205 throw; /* 1205 = deadlock */
+		end catch
 	end
-	else
-	begin
-		exec @ReturnCode = msdb.dbo.sp_add_job
-			@job_name = @JobRunnerName,
-			@enabled = 0,
-			@description = @JobDescription,
-			@start_step_id = 1,
-			@category_name = @CategoryName,
-			@owner_login_name = @OwnerLoginName;
-
-		if @@error != 0 or @ReturnCode != 0 throw 50000, N'Could not create job', 1;
-
-		exec @ReturnCode = msdb.dbo.sp_add_jobstep
-			@job_name = @JobRunnerName,
-			@step_name = @JobStepName,
-			@step_id = 1,
-			@cmdexec_success_code = 0,
-			@on_success_action = 1,
-			@on_success_step_id = 0,
-			@on_fail_action = 2,
-			@on_fail_step_id = 0,
-			@retry_attempts = 0,
-			@retry_interval = 0,
-			@os_run_priority = 0,
-			@subsystem = N'TSQL',
-			@command = @Command,
-			@database_name = @DatabaseName,
-			@flags = 0;
-
-		if @@error != 0 or @ReturnCode != 0 throw 50000, N'Could not create job step', 1;
-
-		exec @ReturnCode = msdb.dbo.sp_add_schedule
-			@schedule_name = @ScheduleName,
-			@enabled = 1,
-			@freq_type = @FrequencyType,
-			@freq_interval = @FrequencyInterval,
-			@freq_subday_type = @FrequencySubDayType,
-			@freq_subday_interval = @FrequencySubDayInterval,
-			@freq_relative_interval = 0,
-			@freq_recurrence_factor = 0,
-			@active_start_date = 20220101,
-			@active_end_date = 99991231,
-			@active_start_time = 0,
-			@active_end_time = 235959,
-			@owner_login_name = @OwnerLoginName;
-
-		if @@error != 0 or @ReturnCode != 0 throw 50000, N'Could not create schedule', 1;
-
-		exec @ReturnCode = msdb.dbo.sp_attach_schedule @job_name = @JobRunnerName, @schedule_name = @ScheduleName
-		if @@error != 0 or @ReturnCode != 0 throw 50000, N'Could not attach schedule to job', 1;
-
-		exec @ReturnCode = msdb.dbo.sp_add_jobserver @job_name = @JobRunnerName, @server_name = @ServerName;
-		if @@error != 0 or @ReturnCode != 0 throw 50000, N'Could not create jobserver', 1;
-
-		exec @ReturnCode = msdb.dbo.sp_update_job @job_name = @JobRunnerName, @enabled = 1;
-		if @@error != 0 or @ReturnCode != 0 throw 50000, N'Could not enable job after creating it', 1;
-	end
-
 end try
 begin catch
 	if @@trancount != 0 rollback;

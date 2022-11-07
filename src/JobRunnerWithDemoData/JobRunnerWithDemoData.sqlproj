@@ -85,9 +85,6 @@
     <Build Include="..\JobRunner\JobRunner\Stored Procedures\AddRunnableProcedure.sql">
       <Link>JobRunner\Stored Procedures\AddRunnableProcedure.sql</Link>
     </Build>
-    <Build Include="..\JobRunner\JobRunner\Stored Procedures\DisableAgentJob_internal.sql">
-      <Link>JobRunner\Stored Procedures\DisableAgentJob_internal.sql</Link>
-    </Build>
     <Build Include="..\JobRunner\JobRunner\Stored Procedures\GetRunnableProcedure.sql">
       <Link>JobRunner\Stored Procedures\GetRunnableProcedure.sql</Link>
     </Build>
@@ -100,11 +97,14 @@
     <Build Include="..\JobRunner\JobRunner\Stored Procedures\RunNextJob.sql">
       <Link>JobRunner\Stored Procedures\RunNextJob.sql</Link>
     </Build>
-    <Build Include="..\JobRunner\JobRunner\Stored Procedures\StopAgentJob_internal.sql">
-      <Link>JobRunner\Stored Procedures\StopAgentJob_internal.sql</Link>
-    </Build>
     <Build Include="..\JobRunner\Security\JobRunner.sql">
       <Link>Security\JobRunner.sql</Link>
+    </Build>
+    <Build Include="..\JobRunner\JobRunner\Stored Procedures\AddOrUpdateSchedule_internal.sql">
+      <Link>JobRunner\Stored Procedures\AddOrUpdateSchedule_internal.sql</Link>
+    </Build>
+    <Build Include="..\JobRunner\JobRunner\Stored Procedures\DeleteJob_internal.sql">
+      <Link>JobRunner\Stored Procedures\DeleteJob_internal.sql</Link>
     </Build>
   </ItemGroup>
   <ItemGroup>

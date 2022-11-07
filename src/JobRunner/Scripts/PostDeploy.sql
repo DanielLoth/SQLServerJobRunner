@@ -24,7 +24,8 @@ exec JobRunner.AddAgentJob
     @DatabaseName = @DatabaseName,
     @OwnerLoginName = N'sa',
     @Mode = N'Recurring',
-    @RecurringSecondsInterval = 10;
+    @RecurringSecondsInterval = 10,
+    @DeleteJobHistory = 1;
 
 exec JobRunner.AddAgentJob
     @JobRunnerName = @CpuIdleJobName,
@@ -32,4 +33,5 @@ exec JobRunner.AddAgentJob
     @ServerName = N'(local)',
     @DatabaseName = @DatabaseName,
     @OwnerLoginName = N'sa',
-    @Mode = N'CPUIdle';
+    @Mode = N'CPUIdle',
+    @DeleteJobHistory = 1;
