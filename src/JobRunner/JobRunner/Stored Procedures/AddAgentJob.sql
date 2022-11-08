@@ -1,4 +1,4 @@
-﻿create procedure JobRunner.AddAgentJob
+create procedure JobRunner.AddAgentJob
 	@JobRunnerName sysname,
 	@CategoryName sysname,
 	@ServerName sysname,
@@ -25,6 +25,7 @@ declare
 	@Msg nvarchar(200);
 
 declare	@Command nvarchar(2000) =
+    N'use ' + @DatabaseName + N'; ' +
 	N'if exists ' +
 	N'(select 1 from sys.procedures where ' +
 	N'object_schema_name(object_id) = N''JobRunner'' ' +
@@ -110,7 +111,7 @@ begin try
 				@os_run_priority = 0,
 				@subsystem = N'TSQL',
 				@command = @Command,
-				@database_name = @DatabaseName,
+				@database_name = N'master',
 				@flags = 0;
 
 			if @@error != 0 or @ReturnCode != 0 throw 50000, N'Could not create job step', 1;
