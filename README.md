@@ -38,7 +38,7 @@ Additional stuff in the demo:
    - Some will fail with other errors - non-zero return codes, throwing exceptions, leaving a transaction open, etc.
    - One will indicate that it is done
    - One will update a table - `dbo.GuidVal` - and acts as a demonstration of a very basic backfill (i.e., putting values into a newly added column)
-- 
+-
 
 Notes:
 - You'll need `sysadmin` to deploy locally, or a login with the role `SQLAgentOperatorRole`
@@ -48,7 +48,7 @@ Notes:
 
 SQL Server Job Runner is designed to integrate with the SqlPackage.exe deployment process. Developers can write code in a post-deployment script to create one or more job runners, and to assign one or more jobs to those runners.
 
-Perhaps the easiest way to use this software is to incorporate the relevant `*.sql` files (for tables, stored procedures, and the schema) in your existing database `SqlProj` project file. 
+Perhaps the easiest way to use this software is to incorporate the relevant `*.sql` files (for tables, stored procedures, and the schema) in your existing database `SqlProj` project file.
 
 To add a job runner, you can add the following to the post-deployment script:
 
@@ -60,24 +60,24 @@ declare @JobRunnerName sysname = N'Job Runner - ' + @DatabaseName;
 declare @CategoryName sysname = N'Database Maintenance';
 
 exec JobRunner.AddAgentJob
-    @JobRunnerName = @JobRunnerName,
-    @CategoryName = @CategoryName,
-    @ServerName = N'(local)',
-    @DatabaseName = @DatabaseName,
-    @OwnerLoginName = N'sa',
-    @Mode = N'Recurring',
-    @RecurringSecondsInterval = 10,
-    @DeleteJobHistory = 1;
+	@JobRunnerName = @JobRunnerName,
+	@CategoryName = @CategoryName,
+	@ServerName = N'(local)',
+	@DatabaseName = @DatabaseName,
+	@OwnerLoginName = N'sa',
+	@Mode = N'Recurring',
+	@RecurringSecondsInterval = 10,
+	@DeleteJobHistory = 1;
 ```
 
 To add a job to the runner, you can add the following to the post-deployment script:
 
 ```sql
 exec JobRunner.AddRunnableProcedure
-    @JobRunnerName = @JobRunnerName,
-    @SchemaName = N'dbo',
-    @ProcedureName = N'MyJobProcedure',
-    @IsEnabledOnCreation = 1;
+	@JobRunnerName = @JobRunnerName,
+	@SchemaName = N'dbo',
+	@ProcedureName = N'MyJobProcedure',
+	@IsEnabledOnCreation = 1;
 ```
 
 A job runner will fail from the outset if it does not have a `JobRunner.Config` record present. The error logging in the SQL Agent job's history screen will notify you to this if the configuration is missing.
@@ -96,107 +96,107 @@ declare @JobConfig table (
 	MaxSyncSecondaryRedoQueueSize bigint not null,
 	MaxAsyncSecondaryRedoQueueSize bigint not null,
 	MaxProcedureExecutionTimeViolationCount int not null,
-    MaxProcedureExecutionFailureCount int not null,
+	MaxProcedureExecutionFailureCount int not null,
 	MaxProcedureExecutionTimeMilliseconds int not null,
 	BatchSleepMilliseconds int not null,
-    ResetViolationCountToZeroOnDeploy bit not null,
-    ResetDoneFlagToFalseOnDeploy bit not null,
-    ResetEnabledFlagToTrueOnDeploy bit not null,
-    ResetErrorColumnsOnDeploy bit not null,
-    ResetExecutionCountersOnDeploy bit not null,
+	ResetViolationCountToZeroOnDeploy bit not null,
+	ResetDoneFlagToFalseOnDeploy bit not null,
+	ResetEnabledFlagToTrueOnDeploy bit not null,
+	ResetErrorColumnsOnDeploy bit not null,
+	ResetExecutionCountersOnDeploy bit not null,
 
-    primary key (JobRunnerName)
+	primary key (JobRunnerName)
 );
 
 insert into @JobConfig (
-    JobRunnerName,
-    TargetJobRunnerExecTimeMilliseconds,
-    [BatchSize],
-    DeadlockPriority,
-    LockTimeoutMilliseconds,
-    MaxSyncSecondaryCommitLatencyMilliseconds,
-    MaxAsyncSecondaryCommitLatencyMilliseconds,
-    MaxSyncSecondaryRedoQueueSize,
-    MaxAsyncSecondaryRedoQueueSize,
-    MaxProcedureExecutionTimeViolationCount,
-    MaxProcedureExecutionFailureCount,
-    MaxProcedureExecutionTimeMilliseconds,
-    BatchSleepMilliseconds,
-    ResetViolationCountToZeroOnDeploy,
-    ResetDoneFlagToFalseOnDeploy,
-    ResetEnabledFlagToTrueOnDeploy,
-    ResetErrorColumnsOnDeploy,
-    ResetExecutionCountersOnDeploy
+	JobRunnerName,
+	TargetJobRunnerExecTimeMilliseconds,
+	[BatchSize],
+	DeadlockPriority,
+	LockTimeoutMilliseconds,
+	MaxSyncSecondaryCommitLatencyMilliseconds,
+	MaxAsyncSecondaryCommitLatencyMilliseconds,
+	MaxSyncSecondaryRedoQueueSize,
+	MaxAsyncSecondaryRedoQueueSize,
+	MaxProcedureExecutionTimeViolationCount,
+	MaxProcedureExecutionFailureCount,
+	MaxProcedureExecutionTimeMilliseconds,
+	BatchSleepMilliseconds,
+	ResetViolationCountToZeroOnDeploy,
+	ResetDoneFlagToFalseOnDeploy,
+	ResetEnabledFlagToTrueOnDeploy,
+	ResetErrorColumnsOnDeploy,
+	ResetExecutionCountersOnDeploy
 )
 values
-    (@JobRunnerName, 30000, 1000, -5, 3000, 1000, 5000, 300, 5000, 5, 5, 500, 500, 1, 1, 1, 1, 1);
+	(@JobRunnerName, 30000, 1000, -5, 3000, 1000, 5000, 300, 5000, 5, 5, 500, 500, 1, 1, 1, 1, 1);
 
 merge JobRunner.Config with (serializable, updlock) t
 using @JobConfig s
 on t.JobRunnerName = s.JobRunnerName
 when matched then
-    update
-    set
-        t.TargetJobRunnerExecTimeMilliseconds = s.TargetJobRunnerExecTimeMilliseconds,
-        t.[BatchSize] = s.[BatchSize],
-        t.DeadlockPriority = s.DeadlockPriority,
-        t.LockTimeoutMilliseconds = s.LockTimeoutMilliseconds,
-        t.MaxSyncSecondaryCommitLatencyMilliseconds = s.MaxSyncSecondaryCommitLatencyMilliseconds,
-        t.MaxAsyncSecondaryCommitLatencyMilliseconds = s.MaxAsyncSecondaryCommitLatencyMilliseconds,
-        t.MaxSyncSecondaryRedoQueueSize = s.MaxSyncSecondaryRedoQueueSize,
-        t.MaxAsyncSecondaryRedoQueueSize = s.MaxAsyncSecondaryRedoQueueSize,
-        t.MaxProcedureExecutionTimeViolationCount = s.MaxProcedureExecutionTimeViolationCount,
-        t.MaxProcedureExecutionFailureCount = s.MaxProcedureExecutionFailureCount,
-        t.MaxProcedureExecutionTimeMilliseconds = s.MaxProcedureExecutionTimeMilliseconds,
-        t.BatchSleepMilliseconds = s.BatchSleepMilliseconds,
-        t.ResetViolationCountToZeroOnDeploy = s.ResetViolationCountToZeroOnDeploy,
-        t.ResetDoneFlagToFalseOnDeploy = s.ResetDoneFlagToFalseOnDeploy,
-        t.ResetEnabledFlagToTrueOnDeploy = s.ResetEnabledFlagToTrueOnDeploy,
-        t.ResetErrorColumnsOnDeploy = s.ResetErrorColumnsOnDeploy,
-        t.ResetExecutionCountersOnDeploy = s.ResetExecutionCountersOnDeploy
+	update
+	set
+		t.TargetJobRunnerExecTimeMilliseconds = s.TargetJobRunnerExecTimeMilliseconds,
+		t.[BatchSize] = s.[BatchSize],
+		t.DeadlockPriority = s.DeadlockPriority,
+		t.LockTimeoutMilliseconds = s.LockTimeoutMilliseconds,
+		t.MaxSyncSecondaryCommitLatencyMilliseconds = s.MaxSyncSecondaryCommitLatencyMilliseconds,
+		t.MaxAsyncSecondaryCommitLatencyMilliseconds = s.MaxAsyncSecondaryCommitLatencyMilliseconds,
+		t.MaxSyncSecondaryRedoQueueSize = s.MaxSyncSecondaryRedoQueueSize,
+		t.MaxAsyncSecondaryRedoQueueSize = s.MaxAsyncSecondaryRedoQueueSize,
+		t.MaxProcedureExecutionTimeViolationCount = s.MaxProcedureExecutionTimeViolationCount,
+		t.MaxProcedureExecutionFailureCount = s.MaxProcedureExecutionFailureCount,
+		t.MaxProcedureExecutionTimeMilliseconds = s.MaxProcedureExecutionTimeMilliseconds,
+		t.BatchSleepMilliseconds = s.BatchSleepMilliseconds,
+		t.ResetViolationCountToZeroOnDeploy = s.ResetViolationCountToZeroOnDeploy,
+		t.ResetDoneFlagToFalseOnDeploy = s.ResetDoneFlagToFalseOnDeploy,
+		t.ResetEnabledFlagToTrueOnDeploy = s.ResetEnabledFlagToTrueOnDeploy,
+		t.ResetErrorColumnsOnDeploy = s.ResetErrorColumnsOnDeploy,
+		t.ResetExecutionCountersOnDeploy = s.ResetExecutionCountersOnDeploy
 when not matched by target then
-    insert (
-        JobRunnerName,
-        TargetJobRunnerExecTimeMilliseconds,
-        [BatchSize],
-        DeadlockPriority,
-        LockTimeoutMilliseconds,
-        MaxSyncSecondaryCommitLatencyMilliseconds,
-        MaxAsyncSecondaryCommitLatencyMilliseconds,
-        MaxSyncSecondaryRedoQueueSize,
-        MaxAsyncSecondaryRedoQueueSize,
-        MaxProcedureExecutionTimeViolationCount,
-        MaxProcedureExecutionFailureCount,
-        MaxProcedureExecutionTimeMilliseconds,
-        BatchSleepMilliseconds,
-        ResetViolationCountToZeroOnDeploy,
-        ResetDoneFlagToFalseOnDeploy,
-        ResetEnabledFlagToTrueOnDeploy,
-        ResetErrorColumnsOnDeploy,
-        ResetExecutionCountersOnDeploy
-    )
-    values (
-        JobRunnerName,
-        TargetJobRunnerExecTimeMilliseconds,
-        [BatchSize],
-        DeadlockPriority,
-        LockTimeoutMilliseconds,
-        MaxSyncSecondaryCommitLatencyMilliseconds,
-        MaxAsyncSecondaryCommitLatencyMilliseconds,
-        MaxSyncSecondaryRedoQueueSize,
-        MaxAsyncSecondaryRedoQueueSize,
-        MaxProcedureExecutionTimeViolationCount,
-        MaxProcedureExecutionFailureCount,
-        MaxProcedureExecutionTimeMilliseconds,
-        BatchSleepMilliseconds,
-        ResetViolationCountToZeroOnDeploy,
-        ResetDoneFlagToFalseOnDeploy,
-        ResetEnabledFlagToTrueOnDeploy,
-        ResetErrorColumnsOnDeploy,
-        ResetExecutionCountersOnDeploy
-    )
+	insert (
+		JobRunnerName,
+		TargetJobRunnerExecTimeMilliseconds,
+		[BatchSize],
+		DeadlockPriority,
+		LockTimeoutMilliseconds,
+		MaxSyncSecondaryCommitLatencyMilliseconds,
+		MaxAsyncSecondaryCommitLatencyMilliseconds,
+		MaxSyncSecondaryRedoQueueSize,
+		MaxAsyncSecondaryRedoQueueSize,
+		MaxProcedureExecutionTimeViolationCount,
+		MaxProcedureExecutionFailureCount,
+		MaxProcedureExecutionTimeMilliseconds,
+		BatchSleepMilliseconds,
+		ResetViolationCountToZeroOnDeploy,
+		ResetDoneFlagToFalseOnDeploy,
+		ResetEnabledFlagToTrueOnDeploy,
+		ResetErrorColumnsOnDeploy,
+		ResetExecutionCountersOnDeploy
+	)
+	values (
+		JobRunnerName,
+		TargetJobRunnerExecTimeMilliseconds,
+		[BatchSize],
+		DeadlockPriority,
+		LockTimeoutMilliseconds,
+		MaxSyncSecondaryCommitLatencyMilliseconds,
+		MaxAsyncSecondaryCommitLatencyMilliseconds,
+		MaxSyncSecondaryRedoQueueSize,
+		MaxAsyncSecondaryRedoQueueSize,
+		MaxProcedureExecutionTimeViolationCount,
+		MaxProcedureExecutionFailureCount,
+		MaxProcedureExecutionTimeMilliseconds,
+		BatchSleepMilliseconds,
+		ResetViolationCountToZeroOnDeploy,
+		ResetDoneFlagToFalseOnDeploy,
+		ResetEnabledFlagToTrueOnDeploy,
+		ResetErrorColumnsOnDeploy,
+		ResetExecutionCountersOnDeploy
+	)
 when not matched by source then
-    delete;
+	delete;
 ```
 
 ## Security
@@ -205,16 +205,16 @@ Your `SqlPackage.exe` database deployments will not need to use the `sysadmin` l
 
 The following table outlines the privileged stored procedures used by this software to configure the SQL Agent jobs.
 
-| Privileged procedure | Required SQL Server role |
-| -- | -- |
-| msdb.dbo.sp_add_job | SQLAgentOperatorRole |
-| msdb.dbo.sp_update_job | SQLAgentOperatorRole |
-| msdb.dbo.sp_delete_job | SQLAgentOperatorRole |
-| msdb.dbo.sp_add_jobstep | SQLAgentOperatorRole |
-| msdb.dbo.sp_add_jobserver | SQLAgentOperatorRole |
-| msdb.dbo.sp_add_schedule | SQLAgentOperatorRole |
-| msdb.dbo.sp_update_schedule | SQLAgentOperatorRole |
-| msdb.dbo.sp_attach_schedule | SQLAgentOperatorRole |
+| Privileged procedure        | Required SQL Server role |
+| --------------------------- | ------------------------ |
+| msdb.dbo.sp_add_job         | SQLAgentOperatorRole     |
+| msdb.dbo.sp_update_job      | SQLAgentOperatorRole     |
+| msdb.dbo.sp_delete_job      | SQLAgentOperatorRole     |
+| msdb.dbo.sp_add_jobstep     | SQLAgentOperatorRole     |
+| msdb.dbo.sp_add_jobserver   | SQLAgentOperatorRole     |
+| msdb.dbo.sp_add_schedule    | SQLAgentOperatorRole     |
+| msdb.dbo.sp_update_schedule | SQLAgentOperatorRole     |
+| msdb.dbo.sp_attach_schedule | SQLAgentOperatorRole     |
 
 The SQL Server login that you use to deploy (e.g.: via `SqlPackage.exe` or similar) will require this `SQLAgentOperatorRole` role.
 
