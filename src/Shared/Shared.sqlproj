@@ -3,17 +3,17 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <Name>JobRunner</Name>
+    <Name>Shared</Name>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectVersion>4.1</ProjectVersion>
-    <ProjectGuid>{48029771-e839-4b16-91b4-fe10f40af16d}</ProjectGuid>
+    <ProjectGuid>{1950fba2-de82-49ca-a8cf-b49695a5d882}</ProjectGuid>
     <DSP>Microsoft.Data.Tools.Schema.Sql.Sql130DatabaseSchemaProvider</DSP>
     <OutputType>Database</OutputType>
     <RootPath>
     </RootPath>
-    <RootNamespace>Database</RootNamespace>
-    <AssemblyName>Database</AssemblyName>
-    <ModelCollation>1033,CI</ModelCollation>
+    <RootNamespace>Shared</RootNamespace>
+    <AssemblyName>Shared</AssemblyName>
+    <ModelCollation>1033, CI</ModelCollation>
     <DefaultFileStructure>BySchemaAndSchemaType</DefaultFileStructure>
     <DeployToDatabase>True</DeployToDatabase>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
@@ -22,26 +22,22 @@
     <SqlServerVerification>False</SqlServerVerification>
     <IncludeCompositeObjects>True</IncludeCompositeObjects>
     <TargetDatabaseSet>True</TargetDatabaseSet>
-    <DefaultCollation>SQL_Latin1_General_CP1_CI_AS</DefaultCollation>
-    <DefaultFilegroup>PRIMARY</DefaultFilegroup>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <OutputPath>bin\Release\</OutputPath>
     <BuildScriptName>$(MSBuildProjectName).sql</BuildScriptName>
-    <TreatWarningsAsErrors>False</TreatWarningsAsErrors>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <DefineDebug>false</DefineDebug>
     <DefineTrace>true</DefineTrace>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <TreatTSqlWarningsAsErrors>True</TreatTSqlWarningsAsErrors>
-    <SuppressTSqlWarnings>71502</SuppressTSqlWarnings>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <OutputPath>bin\Debug\</OutputPath>
     <BuildScriptName>$(MSBuildProjectName).sql</BuildScriptName>
-    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
@@ -49,8 +45,6 @@
     <DefineTrace>true</DefineTrace>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <SuppressTSqlWarnings>71502</SuppressTSqlWarnings>
-    <TreatTSqlWarningsAsErrors>True</TreatTSqlWarningsAsErrors>
   </PropertyGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">11.0</VisualStudioVersion>
@@ -62,41 +56,32 @@
   <Import Condition="'$(SQLDBExtensionsRefPath)' == ''" Project="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v$(VisualStudioVersion)\SSDT\Microsoft.Data.Tools.Schema.SqlTasks.targets" />
   <ItemGroup>
     <Folder Include="Properties" />
-    <Folder Include="JobRunner\" />
-    <Folder Include="JobRunner\Tables\" />
+    <Folder Include="JobRunner" />
+    <Folder Include="Security" />
+    <Folder Include="JobRunner\Functions" />
     <Folder Include="JobRunner\Procedures" />
-    <Folder Include="Scripts" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Localhost.publish.xml" />
-  </ItemGroup>
-  <ItemGroup>
-    <Build Include="JobRunner\Procedures\AddAgentJob.sql" />
-    <Build Include="JobRunner\Procedures\RunJobs.sql" />
-    <Build Include="JobRunner\Tables\Config.sql" />
-    <Build Include="JobRunner\Procedures\GetRunnableStatus.sql" />
-    <Build Include="JobRunner\Tables\RunnableProcedure.sql" />
-    <Build Include="JobRunner\Procedures\AddRunnableProcedure.sql" />
-    <Build Include="JobRunner\Procedures\GetRunnableProcedure.sql" />
-    <Build Include="JobRunner\Procedures\RunNextJob.sql" />
-    <Build Include="JobRunner\Procedures\RegisterAgentJob.sql" />
-  </ItemGroup>
-  <ItemGroup>
-    <PostDeploy Include="Scripts\PostDeploy.sql" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Shared\Shared.sqlproj">
-      <Name>Shared</Name>
-      <Project>{1950fba2-de82-49ca-a8cf-b49695a5d882}</Project>
-      <Private>True</Private>
+    <ArtifactReference Include="$(DacPacRootPath)\Extensions\Microsoft\SQLDB\Extensions\SqlServer\130\SqlSchemas\master.dacpac">
+      <HintPath>$(DacPacRootPath)\Extensions\Microsoft\SQLDB\Extensions\SqlServer\130\SqlSchemas\master.dacpac</HintPath>
       <SuppressMissingDependenciesErrors>False</SuppressMissingDependenciesErrors>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
+      <DatabaseVariableLiteralValue>master</DatabaseVariableLiteralValue>
+    </ArtifactReference>
     <ArtifactReference Include="$(DacPacRootPath)\Extensions\Microsoft\SQLDB\Extensions\SqlServer\130\SqlSchemas\msdb.dacpac">
       <HintPath>$(DacPacRootPath)\Extensions\Microsoft\SQLDB\Extensions\SqlServer\130\SqlSchemas\msdb.dacpac</HintPath>
       <SuppressMissingDependenciesErrors>False</SuppressMissingDependenciesErrors>
       <DatabaseVariableLiteralValue>msdb</DatabaseVariableLiteralValue>
     </ArtifactReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Build Include="Security\JobRunner.sql" />
+    <Build Include="JobRunner\Functions\NormaliseLineEndings.sql" />
+    <Build Include="JobRunner\Procedures\EnsureCategoryExists.sql" />
+    <Build Include="JobRunner\Procedures\EnsureCategoryExistsWithRetry.sql" />
+    <Build Include="JobRunner\Procedures\EnsureDeleteJob.sql" />
+    <Build Include="JobRunner\Procedures\EnsureDeleteJobWithRetry.sql" />
+    <Build Include="JobRunner\Procedures\EnsureScheduleExists.sql" />
+    <Build Include="JobRunner\Procedures\EnsureScheduleExistsWithRetry.sql" />
+    <Build Include="JobRunner\Procedures\Logging.sql" />
   </ItemGroup>
 </Project>

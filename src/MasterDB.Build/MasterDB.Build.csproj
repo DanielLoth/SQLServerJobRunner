@@ -6,7 +6,7 @@
         <SqlServerVersion>Sql130</SqlServerVersion>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <IsPackable>false</IsPackable>
-        <AssemblyName>JobRunnerWithDemoData</AssemblyName>
+        <AssemblyName>MasterDB</AssemblyName>
     </PropertyGroup>
 
     <PropertyGroup>
@@ -15,7 +15,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <Content Include="..\JobRunner\JobRunner\**\*.sql">
+        <Content Include="..\MasterDB\JobRunnerReplicator\**\*.sql">
             <LinkBase>JobRunner</LinkBase>
         </Content>
         <Content Include="..\Shared\JobRunner\**\*.sql">
@@ -24,15 +24,10 @@
         <Content Include="..\Shared\Security\**\*.sql">
             <LinkBase>Security</LinkBase>
         </Content>
-
-        <Content Include="..\JobRunnerWithDemoData\dbo\**\*.sql">
-            <LinkBase>dbo</LinkBase>
-        </Content>
-
-        <None Include="..\JobRunnerWithDemoData\Scripts\*.sql">
+        <None Include="..\MasterDB\Scripts\*.sql">
             <LinkBase>Scripts\</LinkBase>
         </None>
-        <PostDeploy Include="..\JobRunnerWithDemoData\Scripts\PostDeploy.sql" />
+        <PostDeploy Include="..\MasterDB\Scripts\PostDeploy.sql" />
     </ItemGroup>
 
 </Project>

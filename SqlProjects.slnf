@@ -1,0 +1,11 @@
+{
+  "solution": {
+    "path": "All.sln",
+    "projects": [
+      "src\\JobRunner\\JobRunner.sqlproj",
+      "src\\JobRunnerWithDemoData\\JobRunnerWithDemoData.sqlproj",
+      "src\\MasterDB\\MasterDB.sqlproj",
+      "src\\Shared\\Shared.sqlproj"
+    ]
+  }
+}

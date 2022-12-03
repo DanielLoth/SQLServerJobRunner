@@ -61,54 +61,34 @@
   <ItemGroup>
     <Folder Include="Properties" />
     <Folder Include="dbo" />
-    <Folder Include="JobRunner" />
-    <Folder Include="JobRunner\Stored Procedures" />
-    <Folder Include="JobRunner\Tables" />
     <Folder Include="Scripts" />
-    <Folder Include="Security" />
-    <Folder Include="dbo\Stored Procedures" />
+    <Folder Include="dbo\Procedures" />
     <Folder Include="dbo\Tables" />
   </ItemGroup>
   <ItemGroup>
     <Build Include="dbo\Tables\GuidVal.sql" />
-    <Build Include="dbo\Stored Procedures\NoOpJobs.sql" />
-    <Build Include="dbo\Stored Procedures\UpdateGuidValJob.sql" />
-    <Build Include="..\JobRunner\JobRunner\Tables\Config.sql">
-      <Link>JobRunner\Tables\Config.sql</Link>
-    </Build>
-    <Build Include="..\JobRunner\JobRunner\Tables\RunnableProcedure.sql">
-      <Link>JobRunner\Tables\RunnableProcedure.sql</Link>
-    </Build>
-    <Build Include="..\JobRunner\JobRunner\Stored Procedures\AddAgentJob.sql">
-      <Link>JobRunner\Stored Procedures\AddAgentJob.sql</Link>
-    </Build>
-    <Build Include="..\JobRunner\JobRunner\Stored Procedures\AddRunnableProcedure.sql">
-      <Link>JobRunner\Stored Procedures\AddRunnableProcedure.sql</Link>
-    </Build>
-    <Build Include="..\JobRunner\JobRunner\Stored Procedures\GetRunnableProcedure.sql">
-      <Link>JobRunner\Stored Procedures\GetRunnableProcedure.sql</Link>
-    </Build>
-    <Build Include="..\JobRunner\JobRunner\Stored Procedures\GetRunnableStatus.sql">
-      <Link>JobRunner\Stored Procedures\GetRunnableStatus.sql</Link>
-    </Build>
-    <Build Include="..\JobRunner\JobRunner\Stored Procedures\RunJobs.sql">
-      <Link>JobRunner\Stored Procedures\RunJobs.sql</Link>
-    </Build>
-    <Build Include="..\JobRunner\JobRunner\Stored Procedures\RunNextJob.sql">
-      <Link>JobRunner\Stored Procedures\RunNextJob.sql</Link>
-    </Build>
-    <Build Include="..\JobRunner\Security\JobRunner.sql">
-      <Link>Security\JobRunner.sql</Link>
-    </Build>
-    <Build Include="..\JobRunner\JobRunner\Stored Procedures\AddOrUpdateSchedule_internal.sql">
-      <Link>JobRunner\Stored Procedures\AddOrUpdateSchedule_internal.sql</Link>
-    </Build>
-    <Build Include="..\JobRunner\JobRunner\Stored Procedures\DeleteJob_internal.sql">
-      <Link>JobRunner\Stored Procedures\DeleteJob_internal.sql</Link>
-    </Build>
+    <Build Include="dbo\Procedures\NoOpJobs.sql" />
+    <Build Include="dbo\Procedures\UpdateGuidValJob.sql" />
   </ItemGroup>
   <ItemGroup>
     <PostDeploy Include="Scripts\PostDeploy.sql" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Localhost.publish.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\JobRunner\JobRunner.sqlproj">
+      <Name>JobRunner</Name>
+      <Project>{48029771-e839-4b16-91b4-fe10f40af16d}</Project>
+      <Private>True</Private>
+      <SuppressMissingDependenciesErrors>False</SuppressMissingDependenciesErrors>
+    </ProjectReference>
+    <ProjectReference Include="..\Shared\Shared.sqlproj">
+      <Name>Shared</Name>
+      <Project>{1950fba2-de82-49ca-a8cf-b49695a5d882}</Project>
+      <Private>True</Private>
+      <SuppressMissingDependenciesErrors>False</SuppressMissingDependenciesErrors>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <ArtifactReference Include="$(DacPacRootPath)\Extensions\Microsoft\SQLDB\Extensions\SqlServer\130\SqlSchemas\msdb.dacpac">
@@ -116,13 +96,5 @@
       <SuppressMissingDependenciesErrors>False</SuppressMissingDependenciesErrors>
       <DatabaseVariableLiteralValue>msdb</DatabaseVariableLiteralValue>
     </ArtifactReference>
-    <ArtifactReference Include="$(DacPacRootPath)\Extensions\Microsoft\SQLDB\Extensions\SqlServer\130\SqlSchemas\master.dacpac">
-      <HintPath>$(DacPacRootPath)\Extensions\Microsoft\SQLDB\Extensions\SqlServer\130\SqlSchemas\master.dacpac</HintPath>
-      <SuppressMissingDependenciesErrors>False</SuppressMissingDependenciesErrors>
-      <DatabaseVariableLiteralValue>master</DatabaseVariableLiteralValue>
-    </ArtifactReference>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Localhost.publish.xml" />
   </ItemGroup>
 </Project>

@@ -1,8 +1,0 @@
-{
-  "solution": {
-    "path": "All.sln",
-    "projects": [
-      "src\\JobRunnerWithDemoData\\JobRunnerWithDemoData.sqlproj"
-    ]
-  }
-}

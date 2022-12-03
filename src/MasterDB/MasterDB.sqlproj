@@ -3,17 +3,17 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <Name>JobRunner</Name>
+    <Name>MasterDB</Name>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectVersion>4.1</ProjectVersion>
-    <ProjectGuid>{48029771-e839-4b16-91b4-fe10f40af16d}</ProjectGuid>
+    <ProjectGuid>{b631303b-a1cc-4456-a537-ed2f2ff12ace}</ProjectGuid>
     <DSP>Microsoft.Data.Tools.Schema.Sql.Sql130DatabaseSchemaProvider</DSP>
     <OutputType>Database</OutputType>
     <RootPath>
     </RootPath>
-    <RootNamespace>Database</RootNamespace>
-    <AssemblyName>Database</AssemblyName>
-    <ModelCollation>1033,CI</ModelCollation>
+    <RootNamespace>MasterDB</RootNamespace>
+    <AssemblyName>MasterDB</AssemblyName>
+    <ModelCollation>1033, CI</ModelCollation>
     <DefaultFileStructure>BySchemaAndSchemaType</DefaultFileStructure>
     <DeployToDatabase>True</DeployToDatabase>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
@@ -22,8 +22,6 @@
     <SqlServerVerification>False</SqlServerVerification>
     <IncludeCompositeObjects>True</IncludeCompositeObjects>
     <TargetDatabaseSet>True</TargetDatabaseSet>
-    <DefaultCollation>SQL_Latin1_General_CP1_CI_AS</DefaultCollation>
-    <DefaultFilegroup>PRIMARY</DefaultFilegroup>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <OutputPath>bin\Release\</OutputPath>
@@ -35,8 +33,6 @@
     <DefineTrace>true</DefineTrace>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <TreatTSqlWarningsAsErrors>True</TreatTSqlWarningsAsErrors>
-    <SuppressTSqlWarnings>71502</SuppressTSqlWarnings>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <OutputPath>bin\Debug\</OutputPath>
@@ -49,8 +45,6 @@
     <DefineTrace>true</DefineTrace>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <SuppressTSqlWarnings>71502</SuppressTSqlWarnings>
-    <TreatTSqlWarningsAsErrors>True</TreatTSqlWarningsAsErrors>
   </PropertyGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">11.0</VisualStudioVersion>
@@ -62,27 +56,48 @@
   <Import Condition="'$(SQLDBExtensionsRefPath)' == ''" Project="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v$(VisualStudioVersion)\SSDT\Microsoft.Data.Tools.Schema.SqlTasks.targets" />
   <ItemGroup>
     <Folder Include="Properties" />
-    <Folder Include="JobRunner\" />
-    <Folder Include="JobRunner\Tables\" />
+    <Folder Include="JobRunner" />
     <Folder Include="JobRunner\Procedures" />
+    <Folder Include="JobRunner\Tables" />
     <Folder Include="Scripts" />
+  </ItemGroup>
+  <ItemGroup>
+    <Build Include="JobRunner\Tables\Database.sql" />
+    <Build Include="JobRunner\Procedures\MergeDatabases.sql" />
+    <Build Include="JobRunner\Procedures\ProcessDatabases.sql" />
+    <Build Include="JobRunner\Tables\JobRunner.sql" />
+    <PostDeploy Include="Scripts\PostDeploy.sql" />
+    <Build Include="JobRunner\Procedures\AddReplicatorJob.sql" />
+    <Build Include="JobRunner\Tables\Config.sql" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Localhost.publish.xml" />
   </ItemGroup>
   <ItemGroup>
-    <Build Include="JobRunner\Procedures\AddAgentJob.sql" />
-    <Build Include="JobRunner\Procedures\RunJobs.sql" />
-    <Build Include="JobRunner\Tables\Config.sql" />
-    <Build Include="JobRunner\Procedures\GetRunnableStatus.sql" />
-    <Build Include="JobRunner\Tables\RunnableProcedure.sql" />
-    <Build Include="JobRunner\Procedures\AddRunnableProcedure.sql" />
-    <Build Include="JobRunner\Procedures\GetRunnableProcedure.sql" />
-    <Build Include="JobRunner\Procedures\RunNextJob.sql" />
-    <Build Include="JobRunner\Procedures\RegisterAgentJob.sql" />
-  </ItemGroup>
-  <ItemGroup>
-    <PostDeploy Include="Scripts\PostDeploy.sql" />
+    <SqlCmdVariable Include="CategoryName">
+      <DefaultValue>Database Maintenance</DefaultValue>
+      <Value>$(SqlCmdVar__3)</Value>
+    </SqlCmdVariable>
+    <SqlCmdVariable Include="OwnerLoginName">
+      <DefaultValue>sa</DefaultValue>
+      <Value>$(SqlCmdVar__1)</Value>
+    </SqlCmdVariable>
+    <SqlCmdVariable Include="RecurringSecondsInterval">
+      <DefaultValue>60</DefaultValue>
+      <Value>$(SqlCmdVar__5)</Value>
+    </SqlCmdVariable>
+    <SqlCmdVariable Include="ReplicatorJobName">
+      <DefaultValue>JobRunner job replicator</DefaultValue>
+      <Value>$(SqlCmdVar__2)</Value>
+    </SqlCmdVariable>
+    <SqlCmdVariable Include="ScheduleName">
+      <DefaultValue>JobRunner job replicator schedule</DefaultValue>
+      <Value>$(SqlCmdVar__6)</Value>
+    </SqlCmdVariable>
+    <SqlCmdVariable Include="ServerName">
+      <DefaultValue>(local)</DefaultValue>
+      <Value>$(SqlCmdVar__4)</Value>
+    </SqlCmdVariable>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Shared\Shared.sqlproj">
@@ -97,6 +112,11 @@
       <HintPath>$(DacPacRootPath)\Extensions\Microsoft\SQLDB\Extensions\SqlServer\130\SqlSchemas\msdb.dacpac</HintPath>
       <SuppressMissingDependenciesErrors>False</SuppressMissingDependenciesErrors>
       <DatabaseVariableLiteralValue>msdb</DatabaseVariableLiteralValue>
+    </ArtifactReference>
+    <ArtifactReference Include="$(DacPacRootPath)\Extensions\Microsoft\SQLDB\Extensions\SqlServer\130\SqlSchemas\master.dacpac">
+      <HintPath>$(DacPacRootPath)\Extensions\Microsoft\SQLDB\Extensions\SqlServer\130\SqlSchemas\master.dacpac</HintPath>
+      <SuppressMissingDependenciesErrors>False</SuppressMissingDependenciesErrors>
+      <DatabaseVariableLiteralValue>master</DatabaseVariableLiteralValue>
     </ArtifactReference>
   </ItemGroup>
 </Project>

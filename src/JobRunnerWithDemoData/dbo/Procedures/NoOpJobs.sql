@@ -1,4 +1,4 @@
-﻿create procedure dbo.NoOpNoParams
+create procedure dbo.NoOpNoParams
 as
 set nocount, xact_abort on;
 select 1 as A;
@@ -7,7 +7,7 @@ return 0;
 go
 
 create procedure dbo.NoOpBatchSizeParam
-	@BatchSize int
+    @BatchSize int
 as
 set nocount, xact_abort on;
 select 1 as A;
@@ -16,7 +16,7 @@ return 0;
 go
 
 create procedure dbo.NoOpDoneParam
-	@Done bit output
+    @Done bit output
 as
 set nocount, xact_abort on;
 select 1 as A;
@@ -25,7 +25,7 @@ return 0;
 go
 
 create procedure dbo.NoOpDoneParamSetsDoneToTrue
-	@Done bit output
+    @Done bit output
 as
 set nocount, xact_abort on;
 set @Done = 1;
@@ -34,8 +34,8 @@ return 0;
 go
 
 create procedure dbo.NoOpBatchSizeAndDoneParam
-	@BatchSize int,
-	@Done bit output
+    @BatchSize int,
+    @Done bit output
 as
 set nocount, xact_abort on;
 select 1 as A;
@@ -78,8 +78,8 @@ return 0;
 go
 
 create procedure dbo.CpuIdleNoOpWithParams
-	@BatchSize int,
-	@Done bit output
+    @BatchSize int,
+    @Done bit output
 as
 set nocount, xact_abort on;
 select 1 as A;
