@@ -1,31 +1,34 @@
-<Project Sdk="MSBuild.Sdk.SqlProj/2.1.0">
+<Project Sdk="MSBuild.Sdk.SqlProj/2.2.0">
 
-	<PropertyGroup>
-		<TargetFramework>netstandard2.0</TargetFramework>
-		<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-		<SqlServerVersion>Sql130</SqlServerVersion>
-		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-		<IsPackable>false</IsPackable>
-		<AssemblyName>JobRunner</AssemblyName>
-	</PropertyGroup>
+    <PropertyGroup>
+        <TargetFramework>netstandard2.0</TargetFramework>
+        <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+        <SqlServerVersion>Sql130</SqlServerVersion>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <IsPackable>false</IsPackable>
+        <AssemblyName>JobRunner</AssemblyName>
+    </PropertyGroup>
 
-	<PropertyGroup>
-		<SuppressTSqlWarnings>71502,71562</SuppressTSqlWarnings>
-		<TreatTSqlWarningsAsErrors>False</TreatTSqlWarningsAsErrors>
-	</PropertyGroup>
+    <PropertyGroup>
+        <SuppressTSqlWarnings>71502,71562</SuppressTSqlWarnings>
+        <TreatTSqlWarningsAsErrors>False</TreatTSqlWarningsAsErrors>
+    </PropertyGroup>
 
-	<ItemGroup>
-		<Content Include="..\JobRunner\JobRunner\**\*.sql">
-			<LinkBase>JobRunner</LinkBase>
-		</Content>
-		<Content Include="..\JobRunner\Security\**\*.sql">
-			<LinkBase>Security</LinkBase>
-		</Content>
+    <ItemGroup>
+        <Content Include="..\JobRunner\JobRunner\**\*.sql">
+            <LinkBase>JobRunner</LinkBase>
+        </Content>
+        <Content Include="..\Shared\JobRunner\**\*.sql">
+            <LinkBase>JobRunner</LinkBase>
+        </Content>
+        <Content Include="..\Shared\Security\**\*.sql">
+            <LinkBase>Security</LinkBase>
+        </Content>
 
-		<None Include="..\JobRunnerWithDemoData\Scripts\*.sql">
-			<LinkBase>Scripts\</LinkBase>
-		</None>
-		<PostDeploy Include="..\JobRunner\Scripts\PostDeploy.sql" />
-	</ItemGroup>
+        <None Include="..\JobRunnerWithDemoData\Scripts\*.sql">
+            <LinkBase>Scripts\</LinkBase>
+        </None>
+        <PostDeploy Include="..\JobRunner\Scripts\PostDeploy.sql" />
+    </ItemGroup>
 
 </Project>

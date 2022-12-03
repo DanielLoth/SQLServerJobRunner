@@ -3,7 +3,8 @@
     "path": "All.sln",
     "projects": [
       "src\\JobRunner.Build\\JobRunner.Build.csproj",
-      "src\\JobRunnerWithDemoData.Build\\JobRunnerWithDemoData.Build.csproj"
+      "src\\JobRunnerWithDemoData.Build\\JobRunnerWithDemoData.Build.csproj",
+      "src\\MasterDB.Build\\MasterDB.Build.csproj"
     ]
   }
 }

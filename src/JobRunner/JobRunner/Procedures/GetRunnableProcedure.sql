@@ -1,22 +1,22 @@
-﻿create procedure JobRunner.GetRunnableProcedure
-	@JobRunnerName sysname,
-	@SchemaName sysname,
-	@ProcedureName sysname,
-	@HasBatchSizeParam bit,
-	@HasDoneParam bit,
-	@GeneratedProcedureSql nvarchar(4000) output
+create procedure JobRunner.GetRunnableProcedure
+    @JobRunnerName sysname,
+    @SchemaName sysname,
+    @ProcedureName sysname,
+    @HasBatchSizeParam bit,
+    @HasDoneParam bit,
+    @GeneratedProcedureSql nvarchar(4000) output
 as
 
 set nocount, xact_abort on;
-set deadlock_priority high;
-set lock_timeout -1;
+set transaction isolation level read committed;
 
-if @@trancount != 0 throw 50000, N'Open transaction not permitted', 1;
+if @@trancount != 0 throw 50000, N'Open transaction not allowed', 1;
+if @@options & 2 != 0 throw 50000, N'Implicit transactions not allowed', 1;
 
 declare @Sql nvarchar(4000) = N'
 create or alter procedure [#JobRunnerWrapper]
-	@BatchSize int,
-	@Done bit output
+    @BatchSize int,
+    @Done bit output
 as
 
 declare @Result int = 0;
