@@ -1,10 +1,175 @@
+config_variables:
+  MSSQL_SA_PASSWORD:
+    default: NeverGonnaGiveY0uUp
+
 containers:
-  build-env:
-    image: node:14.3.0
+  alpine:
+    image: alpine:latest
+    volumes:
+      - local: .batect/sql-shared
+        container: /sql-shared
+
+  sqltools:
+    image: mcr.microsoft.com/mssql-tools:latest
+    environment:
+      MSSQL_SA_PASSWORD: <{MSSQL_SA_PASSWORD}
+    volumes:
+      - local: .batect/sql-shared
+        container: /sql-shared
+
+  single2019-setup:
+    image: mcr.microsoft.com/mssql-tools:latest
+    environment:
+      MSSQL_SA_PASSWORD: <{MSSQL_SA_PASSWORD}
+    volumes:
+      - local: .batect/sql-shared
+        container: /sql-shared
+
+  s2019-cluster-setup:
+    image: mcr.microsoft.com/mssql-tools:latest
+    environment:
+      MSSQL_SA_PASSWORD: <{MSSQL_SA_PASSWORD}
+    volumes:
+      - local: .batect/sql-shared
+        container: /sql-shared
+    setup_commands:
+      - command: /sql-shared/01-restore-backup.sh
+
+  single2019:
+    image: mcr.microsoft.com/mssql/server:2019-latest
+    environment:
+      MSSQL_SA_PASSWORD: <{MSSQL_SA_PASSWORD}
+      ACCEPT_EULA: "Y"
+      MSSQL_AGENT_ENABLED: "True"
+    ports:
+      - local: 42019
+        container: 1433
+    health_check:
+      command: /opt/mssql-tools/bin/sqlcmd -U sa -S "127.0.0.1,1433" -P $MSSQL_SA_PASSWORD -Q "select 1" || exit 1
+      interval: 2s
+      retries: 100
+      start_period: 5s
+      timeout: 2s
+    setup_commands:
+      - command: echo hi
+    #   - command: /opt/mssql-tools/bin/sqlcmd -U sa -S "127.0.0.1,1433" -P $MSSQL_SA_PASSWORD -i /sql-shared/sql-scripts/01-restore-backup.sql
+    volumes:
+      - local: .batect/sql-shared
+        container: /sql-shared
+
+  s2019n1:
+    image: mcr.microsoft.com/mssql/server:2019-latest
+    environment:
+      MSSQL_SA_PASSWORD: <{MSSQL_SA_PASSWORD}
+      ACCEPT_EULA: "Y"
+      MSSQL_AGENT_ENABLED: "True"
+      MSSQL_ENABLE_HADR: "1"
+    ports:
+      - local: 20191
+        container: 1433
+    health_check:
+      command: /opt/mssql-tools/bin/sqlcmd -U sa -S "127.0.0.1,1433" -P $MSSQL_SA_PASSWORD -Q "select 1" || exit 1
+      interval: 2s
+      retries: 100
+      start_period: 5s
+      timeout: 2s
+    volumes:
+      - local: .batect/sql-shared
+        container: /sql-shared
+  s2019n2:
+    image: mcr.microsoft.com/mssql/server:2019-latest
+    environment:
+      MSSQL_SA_PASSWORD: <{MSSQL_SA_PASSWORD}
+      ACCEPT_EULA: "Y"
+      MSSQL_AGENT_ENABLED: "True"
+      MSSQL_ENABLE_HADR: "1"
+    ports:
+      - local: 20192
+        container: 1433
+    health_check:
+      command: /opt/mssql-tools/bin/sqlcmd -U sa -S "127.0.0.1,1433" -P $MSSQL_SA_PASSWORD -Q "select 1" || exit 1
+      interval: 2s
+      retries: 100
+      start_period: 5s
+      timeout: 2s
+    volumes:
+      - local: .batect/sql-shared
+        container: /sql-shared
+
+  single2022:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      MSSQL_SA_PASSWORD: <{MSSQL_SA_PASSWORD}
+      ACCEPT_EULA: "Y"
+      MSSQL_AGENT_ENABLED: "True"
+    ports:
+      - local: 42022
+        container: 1433
+    health_check:
+      command: /opt/mssql-tools/bin/sqlcmd -U sa -S "127.0.0.1,1433" -P $MSSQL_SA_PASSWORD -Q "select 1" || exit 1
+      interval: 2s
+      retries: 100
+      start_period: 5s
+      timeout: 2s
+
+  s2022n1:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      MSSQL_SA_PASSWORD: <{MSSQL_SA_PASSWORD}
+      ACCEPT_EULA: "Y"
+      MSSQL_AGENT_ENABLED: "True"
+      MSSQL_ENABLE_HADR: "1"
+    ports:
+      - local: 20221
+        container: 1433
+    health_check:
+      command: /opt/mssql-tools/bin/sqlcmd -U sa -S "127.0.0.1,1433" -P $MSSQL_SA_PASSWORD -Q "select 1" || exit 1
+      interval: 2s
+      retries: 100
+      start_period: 5s
+      timeout: 2s
+  s2022n2:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      MSSQL_SA_PASSWORD: <{MSSQL_SA_PASSWORD}
+      ACCEPT_EULA: "Y"
+      MSSQL_AGENT_ENABLED: "True"
+      MSSQL_ENABLE_HADR: "1"
+    ports:
+      - local: 20222
+        container: 1433
+    health_check:
+      command: /opt/mssql-tools/bin/sqlcmd -U sa -S "127.0.0.1,1433" -P $MSSQL_SA_PASSWORD -Q "select 1" || exit 1
+      interval: 2s
+      retries: 100
+      start_period: 5s
+      timeout: 2s
 
 tasks:
-  hello-world:
-    description: Say hello to everyone
+  run-s2019n1:
     run:
-      container: build-env
-      command: echo "Hello world!"
+      container: s2019n1
+
+  run-single-2019:
+    dependencies:
+      - single2019
+    run:
+      container: single2019-setup
+
+  run-cluster-2019:
+    dependencies:
+      - s2019n1
+      - s2019n2
+    run:
+      container: alpine
+
+  run-single-2022:
+    run:
+      container: single2022
+
+  run-cluster-2022:
+    dependencies:
+      - s2022n1
+      - s2022n2
+    run:
+      container: alpine
