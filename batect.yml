@@ -1,0 +1,10 @@
+containers:
+  build-env:
+    image: node:14.3.0
+
+tasks:
+  hello-world:
+    description: Say hello to everyone
+    run:
+      container: build-env
+      command: echo "Hello world!"
