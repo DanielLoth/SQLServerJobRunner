@@ -25,7 +25,7 @@ containers:
       - local: .batect/sql-shared
         container: /sql-shared
 
-          s2019-cluster-setup:
+  s2019-cluster-setup:
     image: mcr.microsoft.com/mssql-tools:latest
     environment:
       MSSQL_SA_PASSWORD: <{MSSQL_SA_PASSWORD}
