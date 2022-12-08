@@ -11,5 +11,8 @@ charset = utf-8
 trim_trailing_whitespace = true
 insert_final_newline = true
 
+[*.sh]
+end_of_line = lf
+
 [batect]
 end_of_line = lf

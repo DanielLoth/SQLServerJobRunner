@@ -1,6 +1,14 @@
 config_variables:
   MSSQL_SA_PASSWORD:
     default: NeverGonnaGiveY0uUp
+  MSSQL_MASTER_KEY_PASSWORD:
+    default: NowYouSitLikeACobwebCatchingTheWind2020
+  MSSQL_HADR_LOGIN_PASSWORD:
+    default: RunningThroughTheFireRunningThroughTheFlame2010
+  MSSQL_HADR_CERT_PASSWORD:
+    default: DoILookThankfulToYou2022
+  MSSQL_HADR_PORT:
+    default: 5022
 
 containers:
   alpine:
@@ -17,15 +25,7 @@ containers:
       - local: .batect/sql-shared
         container: /sql-shared
 
-  single2019-setup:
-    image: mcr.microsoft.com/mssql-tools:latest
-    environment:
-      MSSQL_SA_PASSWORD: <{MSSQL_SA_PASSWORD}
-    volumes:
-      - local: .batect/sql-shared
-        container: /sql-shared
-
-  s2019-cluster-setup:
+          s2019-cluster-setup:
     image: mcr.microsoft.com/mssql-tools:latest
     environment:
       MSSQL_SA_PASSWORD: <{MSSQL_SA_PASSWORD}
@@ -51,8 +51,7 @@ containers:
       start_period: 5s
       timeout: 2s
     setup_commands:
-      - command: echo hi
-    #   - command: /opt/mssql-tools/bin/sqlcmd -U sa -S "127.0.0.1,1433" -P $MSSQL_SA_PASSWORD -i /sql-shared/sql-scripts/01-restore-backup.sql
+      - command: /sql-shared/01-restore-backup.sh
     volumes:
       - local: .batect/sql-shared
         container: /sql-shared
@@ -154,7 +153,7 @@ tasks:
     dependencies:
       - single2019
     run:
-      container: single2019-setup
+      container: alpine
 
   run-cluster-2019:
     dependencies:
