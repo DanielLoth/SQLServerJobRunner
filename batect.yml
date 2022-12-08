@@ -136,6 +136,9 @@ containers:
       retries: 100
       start_period: 5s
       timeout: 2s
+    volumes:
+      - local: .batect/sql-shared
+        container: /sql-shared
   s2022n2:
     image: mcr.microsoft.com/mssql/server:2022-latest
     environment:
@@ -152,6 +155,9 @@ containers:
       retries: 100
       start_period: 5s
       timeout: 2s
+    volumes:
+      - local: .batect/sql-shared
+        container: /sql-shared
 
 tasks:
   run-s2019n1:
