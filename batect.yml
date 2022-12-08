@@ -7,8 +7,6 @@ config_variables:
     default: RunningThroughTheFireRunningThroughTheFlame2010
   MSSQL_HADR_CERT_PASSWORD:
     default: DoILookThankfulToYou2022
-  MSSQL_HADR_PORT:
-    default: 5022
 
 containers:
   alpine:
@@ -24,6 +22,16 @@ containers:
     volumes:
       - local: .batect/sql-shared
         container: /sql-shared
+
+  single-setup:
+    image: mcr.microsoft.com/mssql-tools:latest
+    environment:
+      MSSQL_SA_PASSWORD: <{MSSQL_SA_PASSWORD}
+    volumes:
+      - local: .batect/sql-shared
+        container: /sql-shared
+    setup_commands:
+      - command: /sql-shared/01-restore-backup.sh
 
   s2019-cluster-setup:
     image: mcr.microsoft.com/mssql-tools:latest
@@ -42,7 +50,7 @@ containers:
       ACCEPT_EULA: "Y"
       MSSQL_AGENT_ENABLED: "True"
     ports:
-      - local: 42019
+      - local: 14331
         container: 1433
     health_check:
       command: /opt/mssql-tools/bin/sqlcmd -U sa -S "127.0.0.1,1433" -P $MSSQL_SA_PASSWORD -Q "select 1" || exit 1
@@ -50,8 +58,6 @@ containers:
       retries: 100
       start_period: 5s
       timeout: 2s
-    setup_commands:
-      - command: /sql-shared/01-restore-backup.sh
     volumes:
       - local: .batect/sql-shared
         container: /sql-shared
@@ -64,7 +70,7 @@ containers:
       MSSQL_AGENT_ENABLED: "True"
       MSSQL_ENABLE_HADR: "1"
     ports:
-      - local: 20191
+      - local: 14331
         container: 1433
     health_check:
       command: /opt/mssql-tools/bin/sqlcmd -U sa -S "127.0.0.1,1433" -P $MSSQL_SA_PASSWORD -Q "select 1" || exit 1
@@ -83,7 +89,7 @@ containers:
       MSSQL_AGENT_ENABLED: "True"
       MSSQL_ENABLE_HADR: "1"
     ports:
-      - local: 20192
+      - local: 14332
         container: 1433
     health_check:
       command: /opt/mssql-tools/bin/sqlcmd -U sa -S "127.0.0.1,1433" -P $MSSQL_SA_PASSWORD -Q "select 1" || exit 1
@@ -102,7 +108,7 @@ containers:
       ACCEPT_EULA: "Y"
       MSSQL_AGENT_ENABLED: "True"
     ports:
-      - local: 42022
+      - local: 14331
         container: 1433
     health_check:
       command: /opt/mssql-tools/bin/sqlcmd -U sa -S "127.0.0.1,1433" -P $MSSQL_SA_PASSWORD -Q "select 1" || exit 1
@@ -110,6 +116,9 @@ containers:
       retries: 100
       start_period: 5s
       timeout: 2s
+    volumes:
+      - local: .batect/sql-shared
+        container: /sql-shared
 
   s2022n1:
     image: mcr.microsoft.com/mssql/server:2022-latest
@@ -119,7 +128,7 @@ containers:
       MSSQL_AGENT_ENABLED: "True"
       MSSQL_ENABLE_HADR: "1"
     ports:
-      - local: 20221
+      - local: 14331
         container: 1433
     health_check:
       command: /opt/mssql-tools/bin/sqlcmd -U sa -S "127.0.0.1,1433" -P $MSSQL_SA_PASSWORD -Q "select 1" || exit 1
@@ -135,7 +144,7 @@ containers:
       MSSQL_AGENT_ENABLED: "True"
       MSSQL_ENABLE_HADR: "1"
     ports:
-      - local: 20222
+      - local: 14332
         container: 1433
     health_check:
       command: /opt/mssql-tools/bin/sqlcmd -U sa -S "127.0.0.1,1433" -P $MSSQL_SA_PASSWORD -Q "select 1" || exit 1
@@ -153,18 +162,27 @@ tasks:
     dependencies:
       - single2019
     run:
-      container: alpine
+      container: single-setup
+      environment:
+        NODE1_HOSTNAME: single2019
 
   run-cluster-2019:
     dependencies:
       - s2019n1
       - s2019n2
     run:
-      container: alpine
+      container: s2019-cluster-setup
+      environment:
+        NODE1_HOSTNAME: s2019n1
+        NODE2_HOSTNAME: s2019n2
 
   run-single-2022:
+    dependencies:
+      - single2022
     run:
-      container: single2022
+      container: single-setup
+      environment:
+        NODE1_HOSTNAME: single2022
 
   run-cluster-2022:
     dependencies:
