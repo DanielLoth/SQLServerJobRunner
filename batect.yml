@@ -3,10 +3,15 @@ config_variables:
     default: NeverGonnaGiveY0uUp
   MSSQL_MASTER_KEY_PASSWORD:
     default: NowYouSitLikeACobwebCatchingTheWind2020
+  MSSQL_HADR_LOGIN_NAME:
+    default: hadr_login
   MSSQL_HADR_LOGIN_PASSWORD:
     default: RunningThroughTheFireRunningThroughTheFlame2010
+  MSSQL_HADR_USER_NAME:
+    default: hadr_user
   MSSQL_HADR_CERT_PASSWORD:
     default: DoILookThankfulToYou2022
+
 
 containers:
   alpine:
@@ -31,17 +36,23 @@ containers:
       - local: .batect/sql-shared
         container: /sql-shared
     setup_commands:
+      - command: /sql-shared/00-preamble.sh
       - command: /sql-shared/01-restore-backup.sh
 
-  s2019-cluster-setup:
+  cluster-setup:
     image: mcr.microsoft.com/mssql-tools:latest
     environment:
       MSSQL_SA_PASSWORD: <{MSSQL_SA_PASSWORD}
+      MSSQL_HADR_LOGIN_NAME: <{MSSQL_HADR_LOGIN_NAME}
+      MSSQL_HADR_LOGIN_PASSWORD: <{MSSQL_HADR_LOGIN_PASSWORD}
+      MSSQL_HADR_USER_NAME: <{MSSQL_HADR_USER_NAME}
     volumes:
       - local: .batect/sql-shared
         container: /sql-shared
     setup_commands:
+      - command: /sql-shared/00-preamble.sh
       - command: /sql-shared/01-restore-backup.sh
+      - command: /sql-shared/02-create-login.sh
 
   single2019:
     image: mcr.microsoft.com/mssql/server:2019-latest
@@ -177,7 +188,7 @@ tasks:
       - s2019n1
       - s2019n2
     run:
-      container: s2019-cluster-setup
+      container: cluster-setup
       environment:
         NODE1_HOSTNAME: s2019n1
         NODE2_HOSTNAME: s2019n2
