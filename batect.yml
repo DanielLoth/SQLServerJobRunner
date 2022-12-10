@@ -36,8 +36,7 @@ containers:
       - local: .batect/sql-shared
         container: /sql-shared
     setup_commands:
-      - command: /sql-shared/00-preamble.sh
-      - command: /sql-shared/01-restore-backup.sh
+      - command: /sql-shared/setup-single.sh
 
   cluster-setup:
     image: mcr.microsoft.com/mssql-tools:latest
@@ -50,9 +49,7 @@ containers:
       - local: .batect/sql-shared
         container: /sql-shared
     setup_commands:
-      - command: /sql-shared/00-preamble.sh
-      - command: /sql-shared/01-restore-backup.sh
-      - command: /sql-shared/02-create-login.sh
+      - command: /sql-shared/setup-cluster.sh
 
   single2019:
     image: mcr.microsoft.com/mssql/server:2019-latest
@@ -181,7 +178,7 @@ tasks:
     run:
       container: single-setup
       environment:
-        NODE1_HOSTNAME: single2019
+        SERVER_HOSTNAME: single2019
 
   run-cluster-2019:
     dependencies:
@@ -199,11 +196,14 @@ tasks:
     run:
       container: single-setup
       environment:
-        NODE1_HOSTNAME: single2022
+        SERVER_HOSTNAME: single2022
 
   run-cluster-2022:
     dependencies:
       - s2022n1
       - s2022n2
     run:
-      container: alpine
+      container: cluster-setup
+      environment:
+        NODE1_HOSTNAME: s2022n1
+        NODE2_HOSTNAME: s2022n2

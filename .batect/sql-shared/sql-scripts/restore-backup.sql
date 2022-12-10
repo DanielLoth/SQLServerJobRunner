@@ -1,5 +1,3 @@
-use master;
-
 restore database AdventureWorks
 from disk = N'/sql-shared/backups/AdventureWorksLT2019.bak'
 with file = 1,
