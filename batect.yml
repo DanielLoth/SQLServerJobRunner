@@ -1,17 +1,28 @@
 config_variables:
   MSSQL_SA_PASSWORD:
     default: NeverGonnaGiveY0uUp
-  MSSQL_MASTER_KEY_PASSWORD:
+  MASTER_KEY_PASSWORD:
     default: NowYouSitLikeACobwebCatchingTheWind2020
-  MSSQL_HADR_LOGIN_NAME:
+  HADR_LOGIN_NAME:
     default: hadr_login
-  MSSQL_HADR_LOGIN_PASSWORD:
+  HADR_LOGIN_PASSWORD:
     default: RunningThroughTheFireRunningThroughTheFlame2010
-  MSSQL_HADR_USER_NAME:
+  HADR_USER_NAME:
     default: hadr_user
-  MSSQL_HADR_CERT_PASSWORD:
+  HADR_CERT_NAME:
+    default: hadr_cert
+  HADR_CERT_PASSWORD:
     default: DoILookThankfulToYou2022
-
+  HADR_CERT_FILE:
+    default: /sql-shared/certificate/cert.cert
+  HADR_CERT_PRIVATE_KEY_FILE:
+    default: /sql-shared/certificate/cert.key
+  HADR_ENDPOINT_NAME:
+    default: hadr_endpoint
+  HADR_ENDPOINT_PORT:
+    default: "5022"
+  HADR_AG_NAME:
+    default: AG1
 
 containers:
   alpine:
@@ -42,9 +53,16 @@ containers:
     image: mcr.microsoft.com/mssql-tools:latest
     environment:
       MSSQL_SA_PASSWORD: <{MSSQL_SA_PASSWORD}
-      MSSQL_HADR_LOGIN_NAME: <{MSSQL_HADR_LOGIN_NAME}
-      MSSQL_HADR_LOGIN_PASSWORD: <{MSSQL_HADR_LOGIN_PASSWORD}
-      MSSQL_HADR_USER_NAME: <{MSSQL_HADR_USER_NAME}
+      HADR_LOGIN_NAME: <{HADR_LOGIN_NAME}
+      HADR_LOGIN_PASSWORD: <{HADR_LOGIN_PASSWORD}
+      HADR_USER_NAME: <{HADR_USER_NAME}
+      HADR_CERT_NAME: <{HADR_CERT_NAME}
+      HADR_CERT_PASSWORD: <{HADR_CERT_PASSWORD}
+      HADR_CERT_FILE: <{HADR_CERT_FILE}
+      HADR_CERT_PRIVATE_KEY_FILE: <{HADR_CERT_PRIVATE_KEY_FILE}
+      HADR_ENDPOINT_NAME: <{HADR_ENDPOINT_NAME}
+      HADR_ENDPOINT_PORT: <{HADR_ENDPOINT_PORT}
+      HADR_AG_NAME: <{HADR_AG_NAME}
     volumes:
       - local: .batect/sql-shared
         container: /sql-shared
