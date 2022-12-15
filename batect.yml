@@ -39,6 +39,21 @@ containers:
       - local: .batect/sql-shared
         container: /sql-shared
 
+#   build:
+#     image: mcr.microsoft.com/dotnet/sdk:7.0
+#     working_directory: /build
+#     environment:
+#       DOTNET_NOLOGO: 'true'
+#       DOTNET_CLI_TELEMETRY_OPTOUT: 1
+
+  build:
+    build_directory: ./
+    dockerfile: build-dockerfile
+    working_directory: /code
+    environment:
+      DOTNET_NOLOGO: 'true'
+      DOTNET_CLI_TELEMETRY_OPTOUT: 1
+
   single-setup:
     image: mcr.microsoft.com/mssql-tools:latest
     environment:
@@ -226,3 +241,9 @@ tasks:
       environment:
         NODE1_HOSTNAME: s2022n1
         NODE2_HOSTNAME: s2022n2
+
+  build-sqlproj:
+    description: Build solution
+    run:
+      container: build
+      command: ls

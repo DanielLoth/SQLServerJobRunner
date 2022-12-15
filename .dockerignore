@@ -1,0 +1,20 @@
+# src/JobRunner/bin/**/
+# src/JobRunner/obj/**/
+# src/JobRunner.Build/bin/**/
+# src/JobRunner.Build/obj/**/
+
+# src/JobRunnerWithDemoData/bin/**/
+# src/JobRunnerWithDemoData/obj/**/
+# src/JobRunnerWithDemoData.Build/bin/**/
+# src/JobRunnerWithDemoData.Build/obj/**/
+
+# src/MasterDB/bin/**/
+# src/MasterDB/obj/**/
+# src/MasterDB.Build/bin/**/
+# src/MasterDB.Build/obj/**/
+
+# src/Shared/bin/**/
+# src/Shared/obj/**/
+
+**/bin
+**/obj

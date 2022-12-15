@@ -356,3 +356,5 @@ MigrationBackup/
 # sqlpackage.exe DACPAC script / report files
 *.deployreport.xml
 *.deployscript.sql
+
+.batect/caches/key
