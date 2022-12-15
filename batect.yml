@@ -63,6 +63,7 @@ containers:
       HADR_ENDPOINT_NAME: <{HADR_ENDPOINT_NAME}
       HADR_ENDPOINT_PORT: <{HADR_ENDPOINT_PORT}
       HADR_AG_NAME: <{HADR_AG_NAME}
+      MASTER_KEY_PASSWORD: <{MASTER_KEY_PASSWORD}
     volumes:
       - local: .batect/sql-shared
         container: /sql-shared

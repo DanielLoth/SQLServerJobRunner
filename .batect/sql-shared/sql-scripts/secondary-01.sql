@@ -36,7 +36,3 @@ go
 
 grant connect on endpoint::[$(HADR_ENDPOINT_NAME)] to [$(HADR_LOGIN_NAME)];
 go
-
--- alter availability group [$(HADR_AG_NAME)] join with (cluster_type = none);
--- alter availability group [$(HADR_AG_NAME)] grant create any database;
--- go

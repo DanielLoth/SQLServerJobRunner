@@ -5,13 +5,16 @@ export PATH="$PATH:/opt/mssql-tools/bin/"
 
 rm -f $HADR_CERT_FILE 2> /dev/null
 rm -f $HADR_CERT_PRIVATE_KEY_FILE 2> /dev/null
+rm -f /sql-shared/backups/AW.bak 2> /dev/null
 
 export Node1="$NODE1_HOSTNAME,1433"
 export Node2="$NODE2_HOSTNAME,1433"
 
-# sqlcmd -S $Node1 -U "sa" -P $MSSQL_SA_PASSWORD -N -C -d master -i "/sql-shared/sql-scripts/primary-01.sql"
-# sqlcmd -S $Node2 -U "sa" -P $MSSQL_SA_PASSWORD -N -C -d master -i "/sql-shared/sql-scripts/secondary-01.sql"
-# sqlcmd -S $Node1 -U "sa" -P $MSSQL_SA_PASSWORD -N -C -d master -i "/sql-shared/sql-scripts/primary-02.sql"
+sqlcmd -S $Node1 -U "sa" -P $MSSQL_SA_PASSWORD -N -C -d master -i "/sql-shared/sql-scripts/primary-01.sql"
+sqlcmd -S $Node2 -U "sa" -P $MSSQL_SA_PASSWORD -N -C -d master -i "/sql-shared/sql-scripts/secondary-01.sql"
+sqlcmd -S $Node1 -U "sa" -P $MSSQL_SA_PASSWORD -N -C -d master -i "/sql-shared/sql-scripts/primary-02.sql"
+sqlcmd -S $Node2 -U "sa" -P $MSSQL_SA_PASSWORD -N -C -d master -i "/sql-shared/sql-scripts/secondary-02.sql"
+sqlcmd -S $Node1 -U "sa" -P $MSSQL_SA_PASSWORD -N -C -d master -i "/sql-shared/sql-scripts/primary-03.sql"
 
 # export Node1="$NODE1_HOSTNAME,1433"
 # export Node2="$NODE2_HOSTNAME,1433"
