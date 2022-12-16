@@ -2,9 +2,6 @@ FROM mcr.microsoft.com/dotnet/sdk:7.0
 
 WORKDIR /app
 
-COPY *.sln ./
-COPY *.slnf ./
-COPY src/. ./src/
+COPY ./ ./
 
 RUN dotnet build DotnetCoreProjects.slnf --configuration Release
-RUN ls -R
