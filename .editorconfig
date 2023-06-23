@@ -16,3 +16,6 @@ end_of_line = lf
 
 [batect]
 end_of_line = lf
+
+[*.yml]
+indent_size = 2

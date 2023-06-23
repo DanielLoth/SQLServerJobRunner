@@ -23,6 +23,9 @@ config_variables:
     default: "5022"
   HADR_AG_NAME:
     default: AG1
+  BUILD_NUMBER:
+    default: "1"
+
 
 containers:
   alpine:
@@ -242,8 +245,28 @@ tasks:
         NODE1_HOSTNAME: s2022n1
         NODE2_HOSTNAME: s2022n2
 
-  build-sqlproj:
+  build:
     description: Build solution
     run:
       container: build
-      command: ls
+      command: dotnet build DotnetCoreProjects.slnf --configuration Release --nologo
+
+  test:
+    description: Test solution
+    prerequisites:
+      - build
+    run:
+      container: build
+      command: dotnet test DotnetCoreProjects.slnf --configuration Release --nologo --no-build
+
+  publish:
+    description: Publish database
+    prerequisites:
+      - build
+    dependencies:
+      - single2019
+    run:
+      container: build
+      command: sqlpackage /Action:Publish /SourceFile:/code/src/JobRunner.Build/bin/Release/netstandard2.0/JobRunner.dacpac /Profile:/code/src/JobRunner/Localhost.publish.xml /TargetUser:sa /TargetPassword:${MSSQL_SA_PASSWORD} /TargetServerName:single2019
+      environment:
+        MSSQL_SA_PASSWORD: <{MSSQL_SA_PASSWORD}
